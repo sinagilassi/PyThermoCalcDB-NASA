@@ -14,7 +14,7 @@ The package provides a reliable and reference-state-consistent calculation engin
 - Reaction thermodynamics (ΔH°, ΔS°, ΔG°)
 - Chemical equilibrium constants as a function of temperature
 
-It is designed to integrate seamlessly with **PyThermoDB** for data access and with higher-level process modeling tools such as **PyThermoCalcDB** and **PyChemBalance**.
+It is designed to integrate seamlessly with **PyThermoDB** for data access and with higher-level process modeling tools.
 
 ---
 
@@ -22,16 +22,16 @@ It is designed to integrate seamlessly with **PyThermoDB** for data access and w
 
 - NASA-7 and NASA-9 polynomial support
 - Species thermodynamic properties:
-  - \( C_p(T) \)
-  - \( H^\circ(T) \)
-  - \( S^\circ(T) \)
-  - \( G^\circ(T) \)
+  - $Cp(T)$
+  - $H^\circ(T)$
+  - $S^\circ(T)$
+  - $G^\circ(T)$
 - Reaction thermodynamics:
-  - \( \Delta H^\circ(T) \)
-  - \( \Delta S^\circ(T) \)
-  - \( \Delta G^\circ(T) \)
+  - $\Delta H^\circ(T)$
+  - $\Delta S^\circ(T)$
+  - $\Delta G^\circ(T)$
 - Equilibrium constant calculation:
-  - \( K(T) = \exp(-\Delta G^\circ / RT) \)
+  - $K(T) = \exp(-\Delta G^\circ / RT)$
 - Strict reference-state consistency (ideal-gas standard state)
 - Modular design with clean separation of **data** and **calculation**
 - Suitable for chemical engineering, combustion, and reaction-equilibrium studies
@@ -61,8 +61,8 @@ PyThermoCalcDB-NASA follows three core principles:
 ```bash
 pip install pythermocalcdb-nasa
 ```
-## 🚀 Usage
 
+## 🚀 Usage
 
 ## 🤝 Contributing
 
