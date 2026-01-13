@@ -9,17 +9,22 @@ from pyThermoDB.core import TableEquation
 from pyThermoCalcDB.thermo.enthalpy import (
     En_IG_NASA9_polynomial,
     En_IG_NASA9_polynomial_range,
+    En_IG_NASA9_polynomial_ranges,
     En_IG_NASA7_polynomial,
     En_IG_NASA7_polynomial_range,
+    En_IG_NASA7_polynomial_ranges,
 )
 from pyThermoCalcDB.thermo.entropy import (
     S_IG_NASA9_polynomial,
     S_IG_NASA9_polynomial_range,
+    S_IG_NASA9_polynomial_ranges,
     S_IG_NASA7_polynomial,
     S_IG_NASA7_polynomial_range,
+    S_IG_NASA7_polynomial_ranges,
 )
 from pyThermoCalcDB.thermo.gibbs import (
-    GiFrEn_IG
+    GiFrEn_IG,
+    GiFrEn_IG_ranges
 )
 # locals
 from ..thermo.extractor import DataExtractor
@@ -135,26 +140,10 @@ class HSG(DataExtractor):
                 f"Error extracting NASA9 coefficients: {e}")
             return None
 
-    def calc_absolute_enthalpy(
+    def _set_nasa_coefficients(
             self,
-            temperature: Temperature,
             nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
-    ) -> Optional[float]:
-        """
-        Calculate the enthalpy at the specified temperature using the NASA polynomial coefficients.
-
-        Parameters
-        ----------
-        temperature : Temperature
-            The temperature at which to calculate the enthalpy.
-        nasa_type : Literal["nasa7min", "nasa7max", "nasa9min", "nasa9max"]
-            The type of NASA polynomial to use for the calculation.
-
-        Returns
-        -------
-        Optional[float]
-            The calculated enthalpy if coefficients are available, otherwise None.
-        """
+    ) -> Optional[Dict[str, float]]:
         try:
             if nasa_type == "nasa9_min":
                 # ! get coeffs [NASA9 min]
@@ -197,6 +186,40 @@ class HSG(DataExtractor):
                 logger.warning(
                     f"No NASA coefficients available for type {nasa_type}.")
                 return None
+
+            # NOTE: pack coeffs
+            if pack is None:
+                return None
+
+            return pack
+        except Exception as e:
+            logger.exception(
+                f"Error setting NASA coefficients: {e}")
+            return None
+
+    def calc_absolute_enthalpy(
+            self,
+            temperature: Temperature,
+            nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Calculate the enthalpy at the specified temperature using the NASA polynomial coefficients.
+
+        Parameters
+        ----------
+        temperature : Temperature
+            The temperature at which to calculate the enthalpy.
+        nasa_type : Literal["nasa7min", "nasa7max", "nasa9min", "nasa9max"]
+            The type of NASA polynomial to use for the calculation.
+
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            The calculated enthalpy if coefficients are available, otherwise None.
+        """
+        try:
+            # SECTION: get coeffs
+            pack = self._set_nasa_coefficients(nasa_type=nasa_type)
 
             # NOTE: pack coeffs
             if pack is None:
@@ -271,7 +294,7 @@ class HSG(DataExtractor):
             self,
             temperature: Temperature,
             nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
-    ) -> Optional[float]:
+    ) -> Optional[Dict[str, Any]]:
         """
         Calculate the entropy at the specified temperature using the NASA polynomial coefficients.
 
@@ -283,51 +306,12 @@ class HSG(DataExtractor):
             The type of NASA polynomial to use for the calculation.
         Returns
         -------
-        Optional[float]
+        Optional[Dict[str, Any]]
             The calculated entropy if coefficients are available, otherwise None.
         """
         try:
-            if nasa_type == "nasa9_min":
-                # ! get coeffs [NASA9 min]
-                coeffs = self.nasa9min_coefficients
-                # >> check coeffs
-                if coeffs is None:
-                    return None
-
-                pack = _require_coeffs(coeffs, self.req_coeffs_NASA9)
-            elif nasa_type == "nasa9_max":
-                # ! get coeffs [NASA9 max]
-                coeffs = self.nasa9max_coefficients
-                # >> check coeffs
-                if coeffs is None:
-                    return None
-
-                pack = _require_coeffs(coeffs, self.req_coeffs_NASA9)
-            elif nasa_type == "nasa7_min":
-                # ! get coeffs [NASA7 min]
-                coeffs = self.nasa7min_coefficients
-                # >> check coeffs
-                if coeffs is None:
-                    return None
-
-                pack = _require_coeffs(coeffs, self.req_coeffs_NASA7)
-
-            elif nasa_type == "nasa7_max":
-                # ! get coeffs [NASA7 max]
-                coeffs = self.nasa7max_coefficients
-                # >> check coeffs
-                if coeffs is None:
-                    return None
-
-                pack = _require_coeffs(coeffs, self.req_coeffs_NASA7)
-            else:
-                logger.error(f"Invalid NASA type: {nasa_type}")
-                return None
-
-            if coeffs is None:
-                logger.warning(
-                    f"No NASA coefficients available for type {nasa_type}.")
-                return None
+            # SECTION: get coeffs
+            pack = self._set_nasa_coefficients(nasa_type=nasa_type)
 
             # NOTE: pack coeffs
             if pack is None:
@@ -335,7 +319,7 @@ class HSG(DataExtractor):
 
             # SECTION: calculate entropy
             if nasa_type == "nasa9_min":
-                entropy = En_IG_NASA9_polynomial(
+                entropy = S_IG_NASA9_polynomial(
                     a1=pack["a1"],
                     a2=pack["a2"],
                     a3=pack["a3"],
@@ -348,5 +332,337 @@ class HSG(DataExtractor):
                     temperature=temperature
                 )
             elif nasa_type == "nasa9_max":
-                entropy = En_IG_NASA9_polynomial(
-                    a1=pack["a1
+                entropy = S_IG_NASA9_polynomial(
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"],
+                    b1=pack["b1"],
+                    b2=pack["b2"],
+                    temperature=temperature
+                )
+            elif nasa_type == "nasa7_min":
+                entropy = S_IG_NASA7_polynomial(
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"],
+                    temperature=temperature
+                )
+            elif nasa_type == "nasa7_max":
+                entropy = S_IG_NASA7_polynomial(
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"],
+                    temperature=temperature
+                )
+            else:
+                logger.error(f"Invalid NASA type: {nasa_type}")
+                return None
+
+            # NOTE: prepare return
+            if entropy is None:
+                logger.warning(
+                    f"Entropy calculation returned None for type {nasa_type} at temperature {temperature}.")
+                return None
+
+            return entropy['result']
+        except Exception as e:
+            logger.exception(
+                f"Error calculating entropy at {temperature} K using {nasa_type} coefficients: {e}")
+            return None
+
+    def calc_gibbs_free_energy(
+            self,
+            temperature: Temperature,
+            nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
+    ) -> Optional[Dict[str, Any]]:
+        """
+        Calculate the Gibbs free energy at the specified temperature using the NASA polynomial coefficients.
+
+        Parameters
+        ----------
+        temperature : Temperature
+            The temperature at which to calculate the Gibbs free energy.
+        nasa_type : Literal["nasa7min", "nasa7max", "nasa9min", "nasa9max"]
+            The type of NASA polynomial to use for the calculation.
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            The calculated Gibbs free energy if coefficients are available, otherwise None.
+        """
+        try:
+            # SECTION: get coeffs
+            pack = self._set_nasa_coefficients(nasa_type=nasa_type)
+
+            # NOTE: pack coeffs
+            if pack is None:
+                return None
+
+            # NOTE: select method
+            method = "NASA9" if "nasa9" in nasa_type else "NASA7"
+
+            # SECTION: calculate Gibbs free energy
+            gibbs_free_energy = GiFrEn_IG(
+                method=method,
+                temperature=temperature,
+                coeffs=pack
+            )
+
+            # NOTE: prepare return
+            if gibbs_free_energy is None:
+                logger.warning(
+                    f"Gibbs free energy calculation returned None for type {nasa_type} at temperature {temperature}.")
+                return None
+
+            return gibbs_free_energy['result']
+        except Exception as e:
+            logger.exception(
+                f"Error calculating Gibbs free energy at {temperature} K using {nasa_type} coefficients: {e}")
+            return None
+
+    def calc_absolute_enthalpy_range(
+            self,
+            temperatures: List[Temperature],
+            nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
+    ):
+        """
+        Calculate the enthalpy over a range of temperatures using the NASA polynomial coefficients.
+
+        Parameters
+        ----------
+        temperatures : List[Temperature]
+            The list of temperatures at which to calculate the enthalpy.
+        nasa_type : Literal["nasa7min", "nasa7max", "nasa9min", "nasa9max"]
+            The type of NASA polynomial to use for the calculation.
+
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            The calculated enthalpy values if coefficients are available, otherwise None.
+        """
+        try:
+            # SECTION: get coeffs
+            pack = self._set_nasa_coefficients(nasa_type=nasa_type)
+
+            # NOTE: pack coeffs
+            if pack is None:
+                return None
+
+            # SECTION: calculate enthalpy range
+            if nasa_type == "nasa9_min":
+                enthalpy_range = En_IG_NASA9_polynomial_ranges(
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"],
+                    b1=pack["b1"],
+                    b2=pack["b2"],
+                    temperatures=temperatures
+                )
+            elif nasa_type == "nasa9_max":
+                enthalpy_range = En_IG_NASA9_polynomial_ranges(
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"],
+                    b1=pack["b1"],
+                    b2=pack["b2"],
+                    temperatures=temperatures
+                )
+            elif nasa_type == "nasa7_min":
+                enthalpy_range = En_IG_NASA7_polynomial_ranges(
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"],
+                    temperatures=temperatures
+                )
+            elif nasa_type == "nasa7_max":
+                enthalpy_range = En_IG_NASA7_polynomial_ranges(
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"],
+                    temperatures=temperatures
+                )
+            else:
+                logger.error(f"Invalid NASA type: {nasa_type}")
+                return
+
+            # NOTE: prepare return
+            if enthalpy_range is None:
+                logger.warning(
+                    f"Enthalpy range calculation returned None for type {nasa_type} at temperatures {temperatures}.")
+                return None
+
+            return enthalpy_range['result']
+        except Exception as e:
+            logger.exception(
+                f"Error calculating enthalpy range at temperatures {temperatures} K using {nasa_type} coefficients: {e}")
+            return None
+
+    def calc_absolute_entropy_range(
+            self,
+            temperatures: List[Temperature],
+            nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
+    ):
+        """
+        Calculate the entropy over a range of temperatures using the NASA polynomial coefficients.
+
+        Parameters
+        ----------
+        temperatures : List[Temperature]
+            The list of temperatures at which to calculate the entropy.
+        nasa_type : Literal["nasa7min", "nasa7max", "nasa9min", "nasa9max"]
+            The type of NASA polynomial to use for the calculation.
+
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            The calculated entropy values if coefficients are available, otherwise None.
+        """
+        try:
+            # SECTION: get coeffs
+            pack = self._set_nasa_coefficients(nasa_type=nasa_type)
+
+            # NOTE: pack coeffs
+            if pack is None:
+                return None
+
+            # SECTION: calculate entropy range
+            if nasa_type == "nasa9_min":
+                entropy_range = S_IG_NASA9_polynomial_ranges(
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"],
+                    b1=pack["b1"],
+                    b2=pack["b2"],
+                    temperatures=temperatures
+                )
+            elif nasa_type == "nasa9_max":
+                entropy_range = S_IG_NASA9_polynomial_ranges(
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"],
+                    b1=pack["b1"],
+                    b2=pack["b2"],
+                    temperatures=temperatures
+                )
+            elif nasa_type == "nasa7_min":
+                entropy_range = S_IG_NASA7_polynomial_ranges(
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"],
+                    temperatures=temperatures
+                )
+            elif nasa_type == "nasa7_max":
+                entropy_range = S_IG_NASA7_polynomial_ranges(
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"],
+                    temperatures=temperatures
+                )
+            else:
+                logger.error(f"Invalid NASA type: {nasa_type}")
+                return
+
+            # NOTE: prepare return
+            if entropy_range is None:
+                logger.warning(
+                    f"Entropy range calculation returned None for type {nasa_type} at temperatures {temperatures}.")
+                return None
+
+            return entropy_range['result']
+        except Exception as e:
+            logger.exception(
+                f"Error calculating entropy range at temperatures {temperatures} K using {nasa_type} coefficients: {e}")
+            return None
+
+    def calc_gibbs_free_energy_range(
+            self,
+            temperatures: List[Temperature],
+            nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
+    ):
+        """
+        Calculate the Gibbs free energy over a range of temperatures using the NASA polynomial coefficients.
+
+        Parameters
+        ----------
+        temperatures : List[Temperature]
+            The list of temperatures at which to calculate the Gibbs free energy.
+        nasa_type : Literal["nasa7min", "nasa7max", "nasa9min", "nasa9max"]
+            The type of NASA polynomial to use for the calculation.
+
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            The calculated Gibbs free energy values if coefficients are available, otherwise None.
+        """
+        try:
+            # SECTION: get coeffs
+            pack = self._set_nasa_coefficients(nasa_type=nasa_type)
+
+            # NOTE: pack coeffs
+            if pack is None:
+                return None
+
+            # NOTE: select method
+            method = "NASA9" if "nasa9" in nasa_type else "NASA7"
+
+            # SECTION: calculate Gibbs free energy range
+            gibbs_free_energy_range = GiFrEn_IG_ranges(
+                method=method,
+                temperatures=temperatures,
+                coeffs=pack
+            )
+
+            # NOTE: prepare return
+            if gibbs_free_energy_range is None:
+                logger.warning(
+                    f"Gibbs free energy range calculation returned None for type {nasa_type} at temperatures {temperatures}.")
+                return None
+
+            return gibbs_free_energy_range['result']
+        except Exception as e:
+            logger.exception(
+                f"Error calculating Gibbs free energy range at temperatures {temperatures} K using {nasa_type} coefficients: {e}")
+            return None
