@@ -29,10 +29,11 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
 ]
 dependencies = [
-    "pycuc>=2.4.0",
-    "pythermocalcdb>=0.7.1",
-    "pythermodb-settings>=0.1.13",
-    "pythermolinkdb>=1.4.8",
+    "pycuc>=2.3.2",
+    "pythermocalcdb",
+    "pythermodb",
+    "pythermodb-settings",
+    "pythermolinkdb",
     "rich>=14.2.0",
 ]
 
