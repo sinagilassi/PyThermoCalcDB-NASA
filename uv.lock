@@ -427,7 +427,7 @@ wheels = [
 
 [[package]]
 name = "pythermocalcdb"
-version = "0.7.2"
+version = "0.7.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
@@ -441,9 +441,9 @@ dependencies = [
     { name = "rich" },
     { name = "scipy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/65/7f/47f7b46f350fc024950a0986378648f341549fc5f52639567123d5fe9eb6/pythermocalcdb-0.7.2.tar.gz", hash = "sha256:3499d2b8912b05006e02d5aba61e7280534c80413edcf064e4250cd5cfa270a2", size = 57793, upload-time = "2026-01-13T03:53:50.588Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b6/40/ae3ad4f804c2781993cc3d5baba7382b371d7878ef850d266e221675622a/pythermocalcdb-0.7.3.tar.gz", hash = "sha256:931057fd6906ea27592969685273693e4234d909ee02d5ecc3d92972fc41288f", size = 57211, upload-time = "2026-01-13T18:12:02.794Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/40/f3/3ba33aa4b1680d7238fade92c36fffee2dd92a503a0300915095c87736ea/pythermocalcdb-0.7.2-py3-none-any.whl", hash = "sha256:72d2d6f9950e246d70fd28361d5c2306c04a9e52716900d8a0ddc1bde481db94", size = 72829, upload-time = "2026-01-13T03:53:49.299Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/5b/d8a34a4a0acdbbd5028b7fc095244f0ff3c2df12fadc942820b3b5a734f4/pythermocalcdb-0.7.3-py3-none-any.whl", hash = "sha256:f70a92c5e1891b2dd88775a471c50d2691bb2c4b1ebea8456836c2c004a11a3a", size = 73115, upload-time = "2026-01-13T18:12:00.463Z" },
 ]
 
 [[package]]

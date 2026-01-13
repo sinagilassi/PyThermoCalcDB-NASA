@@ -30,11 +30,11 @@ classifiers = [
 ]
 dependencies = [
     "pycuc>=2.3.2",
+    "rich>=14.2.0",
     "pythermocalcdb",
     "pythermodb",
     "pythermodb-settings",
     "pythermolinkdb",
-    "rich>=14.2.0",
 ]
 
 [project.urls]
