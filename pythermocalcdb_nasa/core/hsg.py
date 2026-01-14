@@ -2,7 +2,7 @@
 import logging
 from typing import Optional, Dict, List, Any, cast, Literal
 from pyThermoLinkDB.models.component_models import ComponentEquationSource
-from pythermodb_settings.models import Component, Temperature, ComponentKey
+from pythermodb_settings.models import Component, Temperature, ComponentKey, CustomProp
 from pythermodb_settings.utils import set_component_id
 from pyThermoLinkDB.thermo import Source
 from pyThermoDB.core import TableEquation
@@ -201,7 +201,7 @@ class HSG(DataExtractor):
             self,
             temperature: Temperature,
             nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[CustomProp]:
         """
         Calculate the enthalpy at the specified temperature using the NASA polynomial coefficients.
 
@@ -214,7 +214,7 @@ class HSG(DataExtractor):
 
         Returns
         -------
-        Optional[Dict[str, Any]]
+        Optional[CustomProp]
             The calculated enthalpy if coefficients are available, otherwise None.
         """
         try:
@@ -284,7 +284,7 @@ class HSG(DataExtractor):
                     f"Enthalpy calculation returned None for type {nasa_type} at temperature {temperature}.")
                 return None
 
-            return enthalpy['result']
+            return enthalpy
         except Exception as e:
             logger.exception(
                 f"Error calculating enthalpy at {temperature} K using {nasa_type} coefficients: {e}")
@@ -294,7 +294,7 @@ class HSG(DataExtractor):
             self,
             temperature: Temperature,
             nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[CustomProp]:
         """
         Calculate the entropy at the specified temperature using the NASA polynomial coefficients.
 
@@ -306,7 +306,7 @@ class HSG(DataExtractor):
             The type of NASA polynomial to use for the calculation.
         Returns
         -------
-        Optional[Dict[str, Any]]
+        Optional[CustomProp]
             The calculated entropy if coefficients are available, otherwise None.
         """
         try:
@@ -376,7 +376,7 @@ class HSG(DataExtractor):
                     f"Entropy calculation returned None for type {nasa_type} at temperature {temperature}.")
                 return None
 
-            return entropy['result']
+            return entropy
         except Exception as e:
             logger.exception(
                 f"Error calculating entropy at {temperature} K using {nasa_type} coefficients: {e}")
@@ -386,7 +386,7 @@ class HSG(DataExtractor):
             self,
             temperature: Temperature,
             nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[CustomProp]:
         """
         Calculate the Gibbs free energy at the specified temperature using the NASA polynomial coefficients.
 
@@ -398,7 +398,7 @@ class HSG(DataExtractor):
             The type of NASA polynomial to use for the calculation.
         Returns
         -------
-        Optional[Dict[str, Any]]
+        Optional[CustomProp]
             The calculated Gibbs free energy if coefficients are available, otherwise None.
         """
         try:
@@ -425,7 +425,7 @@ class HSG(DataExtractor):
                     f"Gibbs free energy calculation returned None for type {nasa_type} at temperature {temperature}.")
                 return None
 
-            return gibbs_free_energy['result']
+            return gibbs_free_energy
         except Exception as e:
             logger.exception(
                 f"Error calculating Gibbs free energy at {temperature} K using {nasa_type} coefficients: {e}")
@@ -518,7 +518,7 @@ class HSG(DataExtractor):
                     f"Enthalpy range calculation returned None for type {nasa_type} at temperatures {temperatures}.")
                 return None
 
-            return enthalpy_range['result']
+            return enthalpy_range
         except Exception as e:
             logger.exception(
                 f"Error calculating enthalpy range at temperatures {temperatures} K using {nasa_type} coefficients: {e}")
@@ -611,7 +611,7 @@ class HSG(DataExtractor):
                     f"Entropy range calculation returned None for type {nasa_type} at temperatures {temperatures}.")
                 return None
 
-            return entropy_range['result']
+            return entropy_range
         except Exception as e:
             logger.exception(
                 f"Error calculating entropy range at temperatures {temperatures} K using {nasa_type} coefficients: {e}")
@@ -661,7 +661,7 @@ class HSG(DataExtractor):
                     f"Gibbs free energy range calculation returned None for type {nasa_type} at temperatures {temperatures}.")
                 return None
 
-            return gibbs_free_energy_range['result']
+            return gibbs_free_energy_range
         except Exception as e:
             logger.exception(
                 f"Error calculating Gibbs free energy range at temperatures {temperatures} K using {nasa_type} coefficients: {e}")
