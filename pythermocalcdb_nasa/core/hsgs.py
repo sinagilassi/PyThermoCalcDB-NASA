@@ -1,7 +1,7 @@
 # import libs
 import logging
 from typing import List, Optional, Union, Tuple, Dict, Literal, cast, Any
-from pythermodb_settings.models import Component, Temperature, ComponentKey
+from pythermodb_settings.models import Component, Temperature, ComponentKey, CustomProp
 from pyThermoLinkDB.thermo import Source
 from pythermodb_settings.utils import set_component_id
 # locals
@@ -96,7 +96,7 @@ class HSGs:
         temperature: Temperature,
         prop_name: Literal["enthalpy", "entropy", "gibbs"],
         **kwargs
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Optional[Dict[str, CustomProp]]:
         """
         Calculate the specified thermodynamic property for all components at a given temperature.
 
@@ -109,7 +109,7 @@ class HSGs:
 
         Returns
         -------
-        Optional[Dict[str, Any]]
+        Optional[Dict[str, CustomProp]]
             A dictionary with component IDs as keys and calculated property values as values.
             Returns None if an error occurs.
         """
@@ -153,6 +153,14 @@ class HSGs:
                     temperature=temperature,
                     nasa_type=nasa_type_selected
                 )
+
+                # >> check
+                if res is None:
+                    logger.warning(
+                        f"{prop_name.capitalize()} calculation returned None for component ID {id} "
+                        f"at temperature {temperature} K using {nasa_type_selected} coefficients."
+                    )
+                    continue
 
                 # >> set
                 hsgs_data[id] = res
