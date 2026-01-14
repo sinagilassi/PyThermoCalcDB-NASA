@@ -30,8 +30,9 @@ def _to_Kelvin(temp: Temperature) -> float:
 
 def _select_nasa_type(
     temperature: Temperature,
-    break_temp: Temperature
-) -> Literal["nasa-min", "nasa-max"]:
+    break_temp: Temperature,
+    nasa_type: Literal['nasa7', 'nasa9']
+) -> Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"]:
     """
     Select the appropriate NASA polynomial type based on temperature.
     """
@@ -43,9 +44,9 @@ def _select_nasa_type(
         T_break = _to_Kelvin(break_temp)
 
         if T <= T_break:
-            return "nasa-min"
+            return "nasa7_min" if nasa_type == "nasa7" else "nasa9_min"
         else:
-            return "nasa-max"
+            return "nasa7_max" if nasa_type == "nasa7" else "nasa9_max"
     except Exception as e:
         logger.exception(f"Error selecting NASA type: {e}")
         raise
