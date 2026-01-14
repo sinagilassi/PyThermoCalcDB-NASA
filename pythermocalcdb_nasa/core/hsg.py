@@ -37,6 +37,27 @@ logger = logging.getLogger(__name__)
 class HSG(DataExtractor):
     """
     Class for extracting NASA polynomial coefficients from a data source.
+
+    Attributes
+    ----------
+    req_coeffs_NASA7 : tuple
+        Required NASA7 coefficient names: ('a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7').
+    req_coeffs_NASA9 : tuple
+        Required NASA9 coefficient names: ('a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'b1', 'b2').
+    component : Component
+        The component for which data is extracted.
+    component_key : ComponentKey
+        The key type used to identify the component.
+    component_id : str
+        The unique identifier for the component.
+    nasa9min_coefficients : Optional[Dict[str, float]]
+        NASA9 minimum temperature range coefficients, if available.
+    nasa9max_coefficients : Optional[Dict[str, float]]
+        NASA9 maximum temperature range coefficients, if available.
+    nasa7min_coefficients : Optional[Dict[str, float]]
+        NASA7 minimum temperature range coefficients, if available.
+    nasa7max_coefficients : Optional[Dict[str, float]]
+        NASA7 maximum temperature range coefficients, if available.
     """
     # SECTION: Attributes
     req_coeffs_NASA7 = ("a1", "a2", "a3", "a4", "a5", "a6", "a7")

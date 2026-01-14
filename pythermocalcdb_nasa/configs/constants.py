@@ -1,4 +1,5 @@
 # import libs
+from typing import Literal
 
 # SECTION: PyThermoDBLink/PyThermoDB
 DATASOURCE = "datasource"
@@ -11,6 +12,11 @@ T_ref_K = 298.15  # reference temperature in K
 P_ref_Pa = 101325.0  # reference pressure in Pa
 
 # SECTION: NASA polynomial types
+
+
+NASAType = Literal["nasa7", "nasa9"]
+
+
 NASA7_MIN = "nasa7_min"
 NASA7_MAX = "nasa7_max"
 NASA9_MIN = "nasa9_min"
