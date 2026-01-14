@@ -58,12 +58,19 @@ class HSGs:
             unit="K"
         )
 
-    def get_hsgs(
+        # SECTION: build hsgs
+        self.components_hsg = self.build_components_hsg()
+
+    def build_components_hsg(
         self,
-        temperature: Optional[Union[float, Temperature]] = None
     ) -> Dict[str, HSG]:
         """
+        Build HSG objects for all components.
 
+        Returns
+        -------
+        Dict[str, HSG]
+            A dictionary with component IDs as keys and HSG objects as values.
         """
         # NOTE: init
         hsgs: Dict[str, HSG] = {}
@@ -84,59 +91,74 @@ class HSGs:
         # NOTE: return
         return hsgs
 
-    def component_hsg(
+    def calc_components_hsg(
         self,
         temperature: Temperature,
-        prop_name: Literal["enthalpy", "entropy", "gibbs"] = "enthalpy"
-    ):
+        prop_name: Literal["enthalpy", "entropy", "gibbs"],
+        **kwargs
+    ) -> Optional[Dict[str, Any]]:
         """
+        Calculate the specified thermodynamic property for all components at a given temperature.
 
+        Parameters
+        ----------
+        temperature : Temperature
+            The temperature at which to calculate the property.
+        prop_name : Literal["enthalpy", "entropy", "gibbs"]
+            The property to calculate. Options are "enthalpy", "entropy", or "gibbs".
+
+        Returns
+        -------
+        Optional[Dict[str, Any]]
+            A dictionary with component IDs as keys and calculated property values as values.
+            Returns None if an error occurs.
         """
-        # SECTION: set methods
-        if prop_name == "enthalpy":
-            prop_func = HSG.calc_absolute_enthalpy
-        elif prop_name == "entropy":
-            prop_func = HSG.calc_absolute_entropy
-        elif prop_name == "gibbs":
-            prop_func = HSG.calc_gibbs_free_energy
-        else:
-            logger.error(f"Invalid prop_name: {prop_name}")
-            return None
-
-        # SECTION: select nasa type
-        nasa_type_selected = _select_nasa_type(
-            temperature=temperature,
-            break_temp=self.nasa_temperature_break,
-            nasa_type=cast(Literal['nasa7', 'nasa9'], self.nasa_type)
-        )
-        # >> cast
-        nasa_type_selected = cast(
-            Literal[
-                "nasa7_min",
-                "nasa7_max",
-                "nasa9_min",
-                "nasa9_max"
-            ],
-            nasa_type_selected
-        )
-
-        # SECTION: calc hsgs
-        # NOTE: init
-        hsgs_data: Dict[str, Any] = {}
-
-        # NOTE: get hsgs
-        hsgs = self.get_hsgs(temperature=temperature)
-
-        # NOTE: loop hsgs
-        for id, hsg in hsgs.items():
-            # NOTE: calc
-            temps, hsgs = prop_func(
+        try:
+            # SECTION: select nasa type
+            nasa_type_selected = _select_nasa_type(
                 temperature=temperature,
-                nasa_type=nasa_type_selected
+                break_temp=self.nasa_temperature_break,
+                nasa_type=cast(Literal['nasa7', 'nasa9'], self.nasa_type)
+            )
+            # >> cast
+            nasa_type_selected = cast(
+                Literal[
+                    "nasa7_min",
+                    "nasa7_max",
+                    "nasa9_min",
+                    "nasa9_max"
+                ],
+                nasa_type_selected
             )
 
-            # NOTE: set
-            hsgs_data[id] = (temps, hsgs)
+            # SECTION: calc hsgs
+            # NOTE: init
+            hsgs_data: Dict[str, Any] = {}
 
-        # NOTE: return
-        return hsgs_data
+            # SECTION: loop hsgs
+            for id, hsg in self.components_hsg.items():
+                # NOTE: set methods
+                if prop_name == "enthalpy":
+                    prop_func = hsg.calc_absolute_enthalpy
+                elif prop_name == "entropy":
+                    prop_func = hsg.calc_absolute_entropy
+                elif prop_name == "gibbs":
+                    prop_func = hsg.calc_gibbs_free_energy
+                else:
+                    logger.error(f"Invalid prop_name: {prop_name}")
+                    return None
+
+                # NOTE: calc
+                res = prop_func(
+                    temperature=temperature,
+                    nasa_type=nasa_type_selected
+                )
+
+                # >> set
+                hsgs_data[id] = res
+
+            # NOTE: return
+            return hsgs_data
+        except Exception as e:
+            logger.error(f"Error in calc_components_hsg: {e}")
+            return None
