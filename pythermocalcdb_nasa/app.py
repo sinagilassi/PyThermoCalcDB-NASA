@@ -14,8 +14,7 @@ def H_T_(
         model_source: ModelSource,
 ) -> Optional[float]:
     """
-    Calculate the enthalpy at a given temperature for the specified component
-    using the provided model source.
+    Calculate the enthalpy at a given temperature for the specified component using the provided model source.
 
     Parameters
     ----------
