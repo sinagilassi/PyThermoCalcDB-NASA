@@ -19,9 +19,20 @@ logger = logging.getLogger(__name__)
 
 class RXNAdapter:
     """
+    Adapter class for reaction calculations.
+
+
     """
 
     def __init__(self, reaction: Reaction):
+        """
+        Initialize RXNAdapter with a Reaction object.
+
+        Parameters
+        ----------
+        reaction : Reaction
+            The reaction for which to perform calculations.
+        """
         self.reaction = reaction
 
     def dH_rxn_std(
