@@ -7,6 +7,18 @@ from .configs import (
     __license__,
 )
 
+# app
+from .app import (
+    H_T,
+    S_T,
+    G_T,
+    dH_rxn_STD,
+    dS_rxn_STD,
+    dG_rxn_STD,
+    Keq,
+    Keq_vh_shortcut
+)
+
 __all__ = [
     # config
     "__version__",
@@ -15,4 +27,12 @@ __all__ = [
     "__email__",
     "__license__",
     # app
+    "H_T",
+    "S_T",
+    "G_T",
+    "dH_rxn_STD",
+    "dS_rxn_STD",
+    "dG_rxn_STD",
+    "Keq",
+    "Keq_vh_shortcut",
 ]
