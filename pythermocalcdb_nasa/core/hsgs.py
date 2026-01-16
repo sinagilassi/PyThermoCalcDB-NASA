@@ -8,12 +8,14 @@ from pythermodb_settings.utils import set_component_id
 from .hsg import HSG
 from ..utils.tools import _select_nasa_type
 from ..configs.constants import (
-    NASA7_MIN,
-    NASA7_MAX,
-    NASA9_MIN,
-    NASA9_MAX,
-    TEMPERATURE_BREAK_NASA7_K,
-    TEMPERATURE_BREAK_NASA9_K
+    NASARangeType,
+    NASAType,
+    TEMPERATURE_BREAK_NASA7_2000_K,
+    TEMPERATURE_BREAK_NASA7_1000_K,
+    TEMPERATURE_BREAK_NASA7_6000_K,
+    TEMPERATURE_BREAK_NASA9_2000_K,
+    TEMPERATURE_BREAK_NASA9_1000_K,
+    TEMPERATURE_BREAK_NASA9_6000_K,
 )
 
 # NOTE: setup logger
@@ -31,10 +33,21 @@ class HSGs:
         source: Source,
         components: List[Component],
         component_key: ComponentKey,
-        nasa_type: Literal["nasa7", "nasa9"]
+        nasa_type: NASAType
     ) -> None:
         """
+        Initialize HSGs object.
 
+        Parameters
+        ----------
+        source : Source
+            The data source for the HSG calculations.
+        components : List[Component]
+            A list of Component objects for which to create HSGs.
+        component_key : ComponentKey
+            The key to identify components.
+        nasa_type : NASAType
+            The type of NASA polynomial to use ("nasa7" or "nasa9").
         """
         # NOTE: set
         self.source = source
@@ -51,10 +64,18 @@ class HSGs:
             for component in components
         ]
 
-        # SECTION: set nasa temperature break value
-        nasa_temperature_break_value = TEMPERATURE_BREAK_NASA7_K if self.nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_K
-        self.nasa_temperature_break = Temperature(
-            value=nasa_temperature_break_value,
+        # SECTION: set nasa temperature break value (range)
+        # ! min [1000 K]
+        nasa_temperature_break_min_value = TEMPERATURE_BREAK_NASA7_1000_K if self.nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_1000_K
+        self.nasa_temperature_break_min = Temperature(
+            value=nasa_temperature_break_min_value,
+            unit="K"
+        )
+
+        # ! max [6000 K]
+        nasa_temperature_break_max_value = TEMPERATURE_BREAK_NASA7_6000_K if self.nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_6000_K
+        self.nasa_temperature_break_max = Temperature(
+            value=nasa_temperature_break_max_value,
             unit="K"
         )
 
@@ -82,7 +103,7 @@ class HSGs:
                 source=self.source,
                 component=component,
                 component_key=cast(ComponentKey, self.component_key),
-                nasa_type=cast(Literal["nasa7", "nasa9"], self.nasa_type),
+                nasa_type=cast(NASAType, self.nasa_type),
             )
 
             # NOTE: set
@@ -117,17 +138,13 @@ class HSGs:
             # SECTION: select nasa type
             nasa_type_selected = _select_nasa_type(
                 temperature=temperature,
-                break_temp=self.nasa_temperature_break,
-                nasa_type=cast(Literal['nasa7', 'nasa9'], self.nasa_type)
+                break_temp_min=self.nasa_temperature_break_min,
+                break_temp_max=self.nasa_temperature_break_max,
+                nasa_type=cast(NASAType, self.nasa_type)
             )
             # >> cast
             nasa_type_selected = cast(
-                Literal[
-                    "nasa7_min",
-                    "nasa7_max",
-                    "nasa9_min",
-                    "nasa9_max"
-                ],
+                NASARangeType,
                 nasa_type_selected
             )
 
