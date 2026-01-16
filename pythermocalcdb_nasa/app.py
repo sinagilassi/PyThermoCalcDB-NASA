@@ -11,14 +11,14 @@ from .core.hsg import HSG
 from .core.hsgs import HSGs
 from .docs.rxn_adapter import RXNAdapter
 from .configs.constants import (
-    NASAType
+    NASAType,
+    TEMPERATURE_BREAK_NASA7_1000_K,
+    TEMPERATURE_BREAK_NASA7_6000_K,
+    TEMPERATURE_BREAK_NASA9_1000_K,
+    TEMPERATURE_BREAK_NASA9_6000_K,
+    NASARangeType
 )
 from .utils.tools import _select_nasa_type
-from .configs.constants import (
-    TEMPERATURE_BREAK_NASA7_K,
-    TEMPERATURE_BREAK_NASA9_K,
-
-)
 
 # NOTE: set up logger
 logger = logging.getLogger(__name__)
@@ -74,27 +74,31 @@ def H_T(
         )
 
         # SECTION: set nasa temperature break value
-        nasa_temperature_break_value = TEMPERATURE_BREAK_NASA7_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_K
-        nasa_temperature_break = Temperature(
-            value=nasa_temperature_break_value,
+        # ! min [1000K]
+        nasa_temp_break_min_value = TEMPERATURE_BREAK_NASA7_1000_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_1000_K
+        nasa_temperature_break_min = Temperature(
+            value=nasa_temp_break_min_value,
+            unit="K"
+        )
+
+        # ! max [6000K]
+        nasa_temp_break_max_value = TEMPERATURE_BREAK_NASA7_6000_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_6000_K
+        nasa_temperature_break_max = Temperature(
+            value=nasa_temp_break_max_value,
             unit="K"
         )
 
         # SECTION: select nasa type
         nasa_type_selected = _select_nasa_type(
             temperature=temperature,
-            break_temp=nasa_temperature_break,
-            nasa_type=cast(Literal['nasa7', 'nasa9'], nasa_type)
+            break_temp_min=nasa_temperature_break_min,
+            break_temp_max=nasa_temperature_break_max,
+            nasa_type=cast(NASAType, nasa_type)
         )
 
         # >> cast
         nasa_type_selected = cast(
-            Literal[
-                "nasa7_min",
-                "nasa7_max",
-                "nasa9_min",
-                "nasa9_max"
-            ],
+            NASARangeType,
             nasa_type_selected
         )
 
@@ -161,27 +165,31 @@ def S_T(
         )
 
         # SECTION: set nasa temperature break value
-        nasa_temperature_break_value = TEMPERATURE_BREAK_NASA7_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_K
-        nasa_temperature_break = Temperature(
-            value=nasa_temperature_break_value,
+        # ! min [1000K]
+        nasa_temp_break_min_value = TEMPERATURE_BREAK_NASA7_1000_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_1000_K
+        nasa_temperature_break_min = Temperature(
+            value=nasa_temp_break_min_value,
+            unit="K"
+        )
+
+        # ! max [6000K]
+        nasa_temp_break_max_value = TEMPERATURE_BREAK_NASA7_6000_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_6000_K
+        nasa_temperature_break_max = Temperature(
+            value=nasa_temp_break_max_value,
             unit="K"
         )
 
         # SECTION: select nasa type
         nasa_type_selected = _select_nasa_type(
             temperature=temperature,
-            break_temp=nasa_temperature_break,
-            nasa_type=cast(Literal['nasa7', 'nasa9'], nasa_type)
+            break_temp_min=nasa_temperature_break_min,
+            break_temp_max=nasa_temperature_break_max,
+            nasa_type=cast(NASAType, nasa_type)
         )
 
         # >> cast
         nasa_type_selected = cast(
-            Literal[
-                "nasa7_min",
-                "nasa7_max",
-                "nasa9_min",
-                "nasa9_max"
-            ],
+            NASARangeType,
             nasa_type_selected
         )
 
@@ -248,27 +256,31 @@ def G_T(
         )
 
         # SECTION: set nasa temperature break value
-        nasa_temperature_break_value = TEMPERATURE_BREAK_NASA7_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_K
-        nasa_temperature_break = Temperature(
-            value=nasa_temperature_break_value,
+        # ! min [1000K]
+        nasa_temp_break_min_value = TEMPERATURE_BREAK_NASA7_1000_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_1000_K
+        nasa_temperature_break_min = Temperature(
+            value=nasa_temp_break_min_value,
+            unit="K"
+        )
+
+        # ! max [6000K]
+        nasa_temp_break_max_value = TEMPERATURE_BREAK_NASA7_6000_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_6000_K
+        nasa_temperature_break_max = Temperature(
+            value=nasa_temp_break_max_value,
             unit="K"
         )
 
         # SECTION: select nasa type
         nasa_type_selected = _select_nasa_type(
             temperature=temperature,
-            break_temp=nasa_temperature_break,
-            nasa_type=cast(Literal['nasa7', 'nasa9'], nasa_type)
+            break_temp_min=nasa_temperature_break_min,
+            break_temp_max=nasa_temperature_break_max,
+            nasa_type=cast(NASAType, nasa_type)
         )
 
         # >> cast
         nasa_type_selected = cast(
-            Literal[
-                "nasa7_min",
-                "nasa7_max",
-                "nasa9_min",
-                "nasa9_max"
-            ],
+            NASARangeType,
             nasa_type_selected
         )
 
