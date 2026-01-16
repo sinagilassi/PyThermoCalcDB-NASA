@@ -3,6 +3,8 @@ import logging
 from typing import Optional, Dict, List, Any, cast, Literal, Tuple
 from pythermodb_settings.models import Temperature
 import pycuc
+# local
+from pythermocalcdb_nasa.configs.constants import NASAType, NASARangeType
 
 # NOTE: logger setup
 logger = logging.getLogger(__name__)
@@ -30,9 +32,10 @@ def _to_Kelvin(temp: Temperature) -> float:
 
 def _select_nasa_type(
     temperature: Temperature,
-    break_temp: Temperature,
+    break_temp_min: Temperature,
+    break_temp_max: Temperature,
     nasa_type: Literal['nasa7', 'nasa9']
-) -> Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"]:
+) -> NASARangeType:
     """
     Select the appropriate NASA polynomial type based on temperature.
     """
@@ -41,12 +44,15 @@ def _select_nasa_type(
         T = _to_Kelvin(temperature)
 
         # >> convert break temp to Kelvin
-        T_break = _to_Kelvin(break_temp)
+        T_break_min = _to_Kelvin(break_temp_min)
+        T_break_max = _to_Kelvin(break_temp_max)
 
-        if T <= T_break:
-            return "nasa7_min" if nasa_type == "nasa7" else "nasa9_min"
+        if T <= T_break_min:
+            return "nasa7_200_1000_K" if nasa_type == "nasa7" else "nasa9_200_1000_K"
+        elif T_break_min < T <= T_break_max:
+            return "nasa7_1000_6000_K" if nasa_type == "nasa7" else "nasa9_1000_6000_K"
         else:
-            return "nasa7_max" if nasa_type == "nasa7" else "nasa9_max"
+            return "nasa7_6000_20000_K" if nasa_type == "nasa7" else "nasa9_6000_20000_K"
     except Exception as e:
         logger.exception(f"Error selecting NASA type: {e}")
         raise
