@@ -29,6 +29,7 @@ from pyThermoCalcDB.thermo.gibbs import (
 # locals
 from ..thermo.extractor import DataExtractor
 from ..utils.tools import _require_coeffs
+from ..configs.constants import NASAType, NASARangeType
 
 # NOTE: set up logger
 logger = logging.getLogger(__name__)
@@ -68,7 +69,7 @@ class HSG(DataExtractor):
             source: Source,
             component: Component,
             component_key: ComponentKey,
-            nasa_type: Literal["nasa7", "nasa9"]
+            nasa_type: NASAType
     ):
         """
         Initialize the HSG extractor with the given data source and component key.
@@ -81,7 +82,7 @@ class HSG(DataExtractor):
             The component for which to extract data.
         component_key : ComponentKey
             The key type used to identify the component.
-        nasa_type : Literal["nasa7", "nasa9"]
+        nasa_type : NASAType
             The type of NASA polynomial to extract.
         """
         # LINK: initialize parent
@@ -104,32 +105,38 @@ class HSG(DataExtractor):
         # SECTION: retrieve data
         # NOTE: extract NASA9 coefficients
         if nasa_type == "nasa9":
-            self.nasa9min_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
-                prop_name="nasa9_min",
+            self.nasa9_200_1000_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
+                prop_name="nasa9_200_1000_K",
             )
-            self.nasa9max_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
-                prop_name="nasa9_max",
+            self.nasa9_1000_6000_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
+                prop_name="nasa9_1000_6000_K",
+            )
+            self.nasa9_6000_20000_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
+                prop_name="nasa9_6000_20000_K",
             )
 
         # NOTE: extract NASA7 coefficients
         if nasa_type == "nasa7":
-            self.nasa7min_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
-                prop_name="nasa7_min",
+            self.nasa7_200_1000_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
+                prop_name="nasa7_200_1000_K",
             )
-            self.nasa7max_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
-                prop_name="nasa7_max",
+            self.nasa7_1000_6000_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
+                prop_name="nasa7_1000_6000_K",
+            )
+            self.nasa7_6000_20000_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
+                prop_name="nasa7_6000_20000_K",
             )
 
     def _extract_nasa_coefficients(
             self,
-            prop_name: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
+            prop_name: NASARangeType,
     ) -> Optional[Dict[str, float]]:
         """
         Extract NASA polynomial coefficients for the specified property.
 
         Parameters
         ----------
-        prop_name : Literal["nasa9min", "nasa9max"]
+        prop_name : NASARangeType
             The name of the property for which to extract the coefficients.
 
         Returns
@@ -163,43 +170,64 @@ class HSG(DataExtractor):
 
     def _set_nasa_coefficients(
             self,
-            nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
+            nasa_type: NASARangeType,
     ) -> Optional[Dict[str, float]]:
         try:
-            if nasa_type == "nasa9_min":
-                # ! get coeffs [NASA9 min]
-                coeffs = self.nasa9min_coefficients
+            if nasa_type == "nasa9_200_1000_K":
+                # ! get coeffs [from 200 to 1000 K]
+                coeffs = self.nasa9_200_1000_coefficients
                 # >> check coeffs
                 if coeffs is None:
                     return None
 
                 pack = _require_coeffs(coeffs, self.req_coeffs_NASA9)
-            elif nasa_type == "nasa9_max":
-                # ! get coeffs [NASA9 max]
-                coeffs = self.nasa9max_coefficients
+
+            elif nasa_type == "nasa9_1000_6000_K":
+                # ! get coeffs [from 1000 to 6000 K]
+                coeffs = self.nasa9_1000_6000_coefficients
                 # >> check coeffs
                 if coeffs is None:
                     return None
 
                 pack = _require_coeffs(coeffs, self.req_coeffs_NASA9)
-            elif nasa_type == "nasa7_min":
-                # ! get coeffs [NASA7 min]
-                coeffs = self.nasa7min_coefficients
+
+            elif nasa_type == "nasa9_6000_20000_K":
+                # ! get coeffs [from 6000 to 20000 K]
+                coeffs = self.nasa9_6000_20000_coefficients
+                # >> check coeffs
+                if coeffs is None:
+                    return None
+
+                pack = _require_coeffs(coeffs, self.req_coeffs_NASA9)
+
+            elif nasa_type == "nasa7_200_1000_K":
+                # ! get coeffs [from 200 to 1000 K]
+                coeffs = self.nasa7_200_1000_coefficients
                 # >> check coeffs
                 if coeffs is None:
                     return None
 
                 pack = _require_coeffs(coeffs, self.req_coeffs_NASA7)
 
-            elif nasa_type == "nasa7_max":
-                # ! get coeffs [NASA7 max]
-                coeffs = self.nasa7max_coefficients
+            elif nasa_type == "nasa7_1000_6000_K":
+                # ! get coeffs [from 1000 to 6000 K]
+                coeffs = self.nasa7_1000_6000_coefficients
+                # >> check coeffs
+                if coeffs is None:
+                    return None
+
+                pack = _require_coeffs(coeffs, self.req_coeffs_NASA7)
+
+            elif nasa_type == "nasa7_6000_20000_K":
+                # ! get coeffs [from 6000 to 20000 K]
+                coeffs = self.nasa7_6000_20000_coefficients
                 # >> check coeffs
                 if coeffs is None:
                     return None
 
                 pack = _require_coeffs(coeffs, self.req_coeffs_NASA7)
             else:
+                # ! invalid type
                 logger.error(f"Invalid NASA type: {nasa_type}")
                 return None
 
@@ -221,7 +249,7 @@ class HSG(DataExtractor):
     def calc_absolute_enthalpy(
             self,
             temperature: Temperature,
-            nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
+            nasa_type: NASARangeType,
     ) -> Optional[CustomProp]:
         """
         Calculate the enthalpy at the specified temperature using the NASA polynomial coefficients.
@@ -230,7 +258,7 @@ class HSG(DataExtractor):
         ----------
         temperature : Temperature
             The temperature at which to calculate the enthalpy.
-        nasa_type : Literal["nasa7min", "nasa7max", "nasa9min", "nasa9max"]
+        nasa_type : NASARangeType
             The type of NASA polynomial to use for the calculation.
 
         Returns
@@ -247,7 +275,7 @@ class HSG(DataExtractor):
                 return None
 
             # SECTION: calculate enthalpy
-            if nasa_type == "nasa9_min":
+            if nasa_type == "nasa9_200_1000_K" or nasa_type == "nasa9_1000_6000_K" or nasa_type == "nasa9_6000_20000_K":
                 enthalpy = En_IG_NASA9_polynomial(
                     a1=pack["a1"],
                     a2=pack["a2"],
@@ -260,31 +288,7 @@ class HSG(DataExtractor):
                     b2=pack["b2"],
                     temperature=temperature
                 )
-            elif nasa_type == "nasa9_max":
-                enthalpy = En_IG_NASA9_polynomial(
-                    a1=pack["a1"],
-                    a2=pack["a2"],
-                    a3=pack["a3"],
-                    a4=pack["a4"],
-                    a5=pack["a5"],
-                    a6=pack["a6"],
-                    a7=pack["a7"],
-                    b1=pack["b1"],
-                    b2=pack["b2"],
-                    temperature=temperature
-                )
-            elif nasa_type == "nasa7_min":
-                enthalpy = En_IG_NASA7_polynomial(
-                    a1=pack["a1"],
-                    a2=pack["a2"],
-                    a3=pack["a3"],
-                    a4=pack["a4"],
-                    a5=pack["a5"],
-                    a6=pack["a6"],
-                    a7=pack["a7"],
-                    temperature=temperature
-                )
-            elif nasa_type == "nasa7_max":
+            elif nasa_type == "nasa7_200_1000_K" or nasa_type == "nasa7_1000_6000_K" or nasa_type == "nasa7_6000_20000_K":
                 enthalpy = En_IG_NASA7_polynomial(
                     a1=pack["a1"],
                     a2=pack["a2"],
@@ -314,7 +318,7 @@ class HSG(DataExtractor):
     def calc_absolute_entropy(
             self,
             temperature: Temperature,
-            nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
+            nasa_type: NASARangeType,
     ) -> Optional[CustomProp]:
         """
         Calculate the entropy at the specified temperature using the NASA polynomial coefficients.
@@ -323,7 +327,7 @@ class HSG(DataExtractor):
         ----------
         temperature : Temperature
             The temperature at which to calculate the entropy.
-        nasa_type : Literal["nasa7min", "nasa7max", "nasa9min", "nasa9max"]
+        nasa_type : NASARangeType
             The type of NASA polynomial to use for the calculation.
         Returns
         -------
@@ -339,7 +343,7 @@ class HSG(DataExtractor):
                 return None
 
             # SECTION: calculate entropy
-            if nasa_type == "nasa9_min":
+            if nasa_type == "nasa9_200_1000_K" or nasa_type == "nasa9_1000_6000_K" or nasa_type == "nasa9_6000_20000_K":
                 entropy = S_IG_NASA9_polynomial(
                     a1=pack["a1"],
                     a2=pack["a2"],
@@ -352,31 +356,7 @@ class HSG(DataExtractor):
                     b2=pack["b2"],
                     temperature=temperature
                 )
-            elif nasa_type == "nasa9_max":
-                entropy = S_IG_NASA9_polynomial(
-                    a1=pack["a1"],
-                    a2=pack["a2"],
-                    a3=pack["a3"],
-                    a4=pack["a4"],
-                    a5=pack["a5"],
-                    a6=pack["a6"],
-                    a7=pack["a7"],
-                    b1=pack["b1"],
-                    b2=pack["b2"],
-                    temperature=temperature
-                )
-            elif nasa_type == "nasa7_min":
-                entropy = S_IG_NASA7_polynomial(
-                    a1=pack["a1"],
-                    a2=pack["a2"],
-                    a3=pack["a3"],
-                    a4=pack["a4"],
-                    a5=pack["a5"],
-                    a6=pack["a6"],
-                    a7=pack["a7"],
-                    temperature=temperature
-                )
-            elif nasa_type == "nasa7_max":
+            elif nasa_type == "nasa7_200_1000_K" or nasa_type == "nasa7_1000_6000_K" or nasa_type == "nasa7_6000_20000_K":
                 entropy = S_IG_NASA7_polynomial(
                     a1=pack["a1"],
                     a2=pack["a2"],
@@ -406,7 +386,7 @@ class HSG(DataExtractor):
     def calc_gibbs_free_energy(
             self,
             temperature: Temperature,
-            nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
+            nasa_type: NASARangeType,
     ) -> Optional[CustomProp]:
         """
         Calculate the Gibbs free energy at the specified temperature using the NASA polynomial coefficients.
@@ -415,7 +395,7 @@ class HSG(DataExtractor):
         ----------
         temperature : Temperature
             The temperature at which to calculate the Gibbs free energy.
-        nasa_type : Literal["nasa7min", "nasa7max", "nasa9min", "nasa9max"]
+        nasa_type : NASARangeType
             The type of NASA polynomial to use for the calculation.
         Returns
         -------
@@ -455,7 +435,7 @@ class HSG(DataExtractor):
     def calc_absolute_enthalpy_range(
             self,
             temperatures: List[Temperature],
-            nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
+            nasa_type: NASARangeType,
     ):
         """
         Calculate the enthalpy over a range of temperatures using the NASA polynomial coefficients.
@@ -464,7 +444,7 @@ class HSG(DataExtractor):
         ----------
         temperatures : List[Temperature]
             The list of temperatures at which to calculate the enthalpy.
-        nasa_type : Literal["nasa7min", "nasa7max", "nasa9min", "nasa9max"]
+        nasa_type : NASARangeType
             The type of NASA polynomial to use for the calculation.
 
         Returns
@@ -481,7 +461,7 @@ class HSG(DataExtractor):
                 return None
 
             # SECTION: calculate enthalpy range
-            if nasa_type == "nasa9_min":
+            if nasa_type == "nasa9_200_1000_K" or nasa_type == "nasa9_1000_6000_K" or nasa_type == "nasa9_6000_20000_K":
                 enthalpy_range = En_IG_NASA9_polynomial_ranges(
                     a1=pack["a1"],
                     a2=pack["a2"],
@@ -494,31 +474,7 @@ class HSG(DataExtractor):
                     b2=pack["b2"],
                     temperatures=temperatures
                 )
-            elif nasa_type == "nasa9_max":
-                enthalpy_range = En_IG_NASA9_polynomial_ranges(
-                    a1=pack["a1"],
-                    a2=pack["a2"],
-                    a3=pack["a3"],
-                    a4=pack["a4"],
-                    a5=pack["a5"],
-                    a6=pack["a6"],
-                    a7=pack["a7"],
-                    b1=pack["b1"],
-                    b2=pack["b2"],
-                    temperatures=temperatures
-                )
-            elif nasa_type == "nasa7_min":
-                enthalpy_range = En_IG_NASA7_polynomial_ranges(
-                    a1=pack["a1"],
-                    a2=pack["a2"],
-                    a3=pack["a3"],
-                    a4=pack["a4"],
-                    a5=pack["a5"],
-                    a6=pack["a6"],
-                    a7=pack["a7"],
-                    temperatures=temperatures
-                )
-            elif nasa_type == "nasa7_max":
+            elif nasa_type == "nasa7_200_1000_K" or nasa_type == "nasa7_1000_6000_K" or nasa_type == "nasa7_6000_20000_K":
                 enthalpy_range = En_IG_NASA7_polynomial_ranges(
                     a1=pack["a1"],
                     a2=pack["a2"],
@@ -548,7 +504,7 @@ class HSG(DataExtractor):
     def calc_absolute_entropy_range(
             self,
             temperatures: List[Temperature],
-            nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
+            nasa_type: NASARangeType,
     ):
         """
         Calculate the entropy over a range of temperatures using the NASA polynomial coefficients.
@@ -557,7 +513,7 @@ class HSG(DataExtractor):
         ----------
         temperatures : List[Temperature]
             The list of temperatures at which to calculate the entropy.
-        nasa_type : Literal["nasa7min", "nasa7max", "nasa9min", "nasa9max"]
+        nasa_type : NASARangeType
             The type of NASA polynomial to use for the calculation.
 
         Returns
@@ -574,7 +530,7 @@ class HSG(DataExtractor):
                 return None
 
             # SECTION: calculate entropy range
-            if nasa_type == "nasa9_min":
+            if nasa_type == "nasa9_200_1000_K" or nasa_type == "nasa9_1000_6000_K" or nasa_type == "nasa9_6000_20000_K":
                 entropy_range = S_IG_NASA9_polynomial_ranges(
                     a1=pack["a1"],
                     a2=pack["a2"],
@@ -587,31 +543,7 @@ class HSG(DataExtractor):
                     b2=pack["b2"],
                     temperatures=temperatures
                 )
-            elif nasa_type == "nasa9_max":
-                entropy_range = S_IG_NASA9_polynomial_ranges(
-                    a1=pack["a1"],
-                    a2=pack["a2"],
-                    a3=pack["a3"],
-                    a4=pack["a4"],
-                    a5=pack["a5"],
-                    a6=pack["a6"],
-                    a7=pack["a7"],
-                    b1=pack["b1"],
-                    b2=pack["b2"],
-                    temperatures=temperatures
-                )
-            elif nasa_type == "nasa7_min":
-                entropy_range = S_IG_NASA7_polynomial_ranges(
-                    a1=pack["a1"],
-                    a2=pack["a2"],
-                    a3=pack["a3"],
-                    a4=pack["a4"],
-                    a5=pack["a5"],
-                    a6=pack["a6"],
-                    a7=pack["a7"],
-                    temperatures=temperatures
-                )
-            elif nasa_type == "nasa7_max":
+            elif nasa_type == "nasa7_200_1000_K" or nasa_type == "nasa7_1000_6000_K" or nasa_type == "nasa7_6000_20000_K":
                 entropy_range = S_IG_NASA7_polynomial_ranges(
                     a1=pack["a1"],
                     a2=pack["a2"],
@@ -641,7 +573,7 @@ class HSG(DataExtractor):
     def calc_gibbs_free_energy_range(
             self,
             temperatures: List[Temperature],
-            nasa_type: Literal["nasa7_min", "nasa7_max", "nasa9_min", "nasa9_max"],
+            nasa_type: NASARangeType,
     ):
         """
         Calculate the Gibbs free energy over a range of temperatures using the NASA polynomial coefficients.
@@ -650,7 +582,7 @@ class HSG(DataExtractor):
         ----------
         temperatures : List[Temperature]
             The list of temperatures at which to calculate the Gibbs free energy.
-        nasa_type : Literal["nasa7min", "nasa7max", "nasa9min", "nasa9max"]
+        nasa_type : NASARangeType
             The type of NASA polynomial to use for the calculation.
 
         Returns
