@@ -26,6 +26,10 @@ from pyThermoCalcDB.thermo.gibbs import (
     GiFrEn_IG,
     GiFrEn_IG_ranges
 )
+from pyThermoCalcDB.thermo.heat_capacity import (
+    Cp_IG_NASA9_polynomial,
+    Cp_IG_NASA7_polynomial
+)
 # locals
 from ..thermo.extractor import DataExtractor
 from ..utils.tools import _require_coeffs
@@ -51,14 +55,18 @@ class HSG(DataExtractor):
         The key type used to identify the component.
     component_id : str
         The unique identifier for the component.
-    nasa9min_coefficients : Optional[Dict[str, float]]
-        NASA9 minimum temperature range coefficients, if available.
-    nasa9max_coefficients : Optional[Dict[str, float]]
-        NASA9 maximum temperature range coefficients, if available.
-    nasa7min_coefficients : Optional[Dict[str, float]]
-        NASA7 minimum temperature range coefficients, if available.
-    nasa7max_coefficients : Optional[Dict[str, float]]
-        NASA7 maximum temperature range coefficients, if available.
+    nasa9_200_1000_coefficients : Optional[Dict[str, float]]
+        NASA9 coefficients for the temperature range 200-1000 K.
+    nasa9_1000_6000_coefficients : Optional[Dict[str, float]]
+        NASA9 coefficients for the temperature range 1000-6000 K.
+    nasa9_6000_20000_coefficients : Optional[Dict[str, float]]
+        NASA9 coefficients for the temperature range 6000-20000 K.
+    nasa7_200_1000_coefficients : Optional[Dict[str, float]]
+        NASA7 coefficients for the temperature range 200-1000 K.
+    nasa7_1000_6000_coefficients : Optional[Dict[str, float]]
+        NASA7 coefficients for the temperature range 1000-6000 K.
+    nasa7_6000_20000_coefficients : Optional[Dict[str, float]]
+        NASA7 coefficients for the temperature range 6000-20000 K.
     """
     # SECTION: Attributes
     req_coeffs_NASA7 = ("a1", "a2", "a3", "a4", "a5", "a6", "a7")
@@ -414,11 +422,32 @@ class HSG(DataExtractor):
             method = "NASA9" if "nasa9" in nasa_type else "NASA7"
 
             # SECTION: calculate Gibbs free energy
-            gibbs_free_energy = GiFrEn_IG(
-                method=method,
-                temperature=temperature,
-                coeffs=pack
-            )
+            if method == "NASA9":
+                gibbs_free_energy = GiFrEn_IG(
+                    method=method,
+                    temperature=temperature,
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"],
+                    b1=pack["b1"],
+                    b2=pack["b2"]
+                )
+            else:
+                gibbs_free_energy = GiFrEn_IG(
+                    method=method,
+                    temperature=temperature,
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"]
+                )
 
             # NOTE: prepare return
             if gibbs_free_energy is None:
@@ -430,6 +459,73 @@ class HSG(DataExtractor):
         except Exception as e:
             logger.exception(
                 f"Error calculating Gibbs free energy at {temperature} K using {nasa_type} coefficients: {e}")
+            return None
+
+    def calc_heat_capacity(
+            self,
+            temperature: Temperature,
+            nasa_type: NASARangeType,
+    ) -> Optional[CustomProp]:
+        """
+        Calculate the heat capacity at the specified temperature using the NASA polynomial coefficients.
+
+        Parameters
+        ----------
+        temperature : Temperature
+            The temperature at which to calculate the heat capacity.
+        nasa_type : NASARangeType
+            The type of NASA polynomial to use for the calculation.
+        Returns
+        -------
+        Optional[CustomProp]
+            The calculated heat capacity if coefficients are available, otherwise None.
+        """
+        try:
+            # SECTION: get coeffs
+            pack = self._set_nasa_coefficients(nasa_type=nasa_type)
+
+            # NOTE: pack coeffs
+            if pack is None:
+                return None
+
+            # SECTION: calculate heat capacity
+            if nasa_type == "nasa9_200_1000_K" or nasa_type == "nasa9_1000_6000_K" or nasa_type == "nasa9_6000_20000_K":
+                heat_capacity = Cp_IG_NASA9_polynomial(
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"],
+                    b1=pack["b1"],
+                    b2=pack["b2"],
+                    temperature=temperature
+                )
+            elif nasa_type == "nasa7_200_1000_K" or nasa_type == "nasa7_1000_6000_K" or nasa_type == "nasa7_6000_20000_K":
+                heat_capacity = Cp_IG_NASA7_polynomial(
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"],
+                    temperature=temperature
+                )
+            else:
+                logger.error(f"Invalid NASA type: {nasa_type}")
+                return None
+
+            # NOTE: prepare return
+            if heat_capacity is None:
+                logger.warning(
+                    f"Heat capacity calculation returned None for type {nasa_type} at temperature {temperature}.")
+                return None
+            return heat_capacity
+        except Exception as e:
+            logger.exception(
+                f"Error calculating heat capacity at {temperature} K using {nasa_type} coefficients: {e}")
             return None
 
     def calc_absolute_enthalpy_range(
@@ -602,11 +698,35 @@ class HSG(DataExtractor):
             method = "NASA9" if "nasa9" in nasa_type else "NASA7"
 
             # SECTION: calculate Gibbs free energy range
-            gibbs_free_energy_range = GiFrEn_IG_ranges(
-                method=method,
-                temperatures=temperatures,
-                coeffs=pack
-            )
+            if method == "NASA9":
+                gibbs_free_energy_range = GiFrEn_IG_ranges(
+                    method=method,
+                    temperatures=temperatures,
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"],
+                    b1=pack["b1"],
+                    b2=pack["b2"]
+                )
+            elif method == "NASA7":
+                gibbs_free_energy_range = GiFrEn_IG_ranges(
+                    method=method,
+                    temperatures=temperatures,
+                    a1=pack["a1"],
+                    a2=pack["a2"],
+                    a3=pack["a3"],
+                    a4=pack["a4"],
+                    a5=pack["a5"],
+                    a6=pack["a6"],
+                    a7=pack["a7"]
+                )
+            else:
+                logger.error(f"Invalid NASA type: {nasa_type}")
+                return
 
             # NOTE: prepare return
             if gibbs_free_energy_range is None:
