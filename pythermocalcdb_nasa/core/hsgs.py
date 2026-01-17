@@ -64,6 +64,13 @@ class HSGs:
             for component in components
         ]
 
+        # NOTE: reaction component ids
+        self.reaction_component_ids = {}
+        # iterate over components
+        for comp_id, component in zip(self.component_ids, components):
+            # set
+            self.reaction_component_ids[comp_id] = f"{component.formula}-{component.state}"
+
         # SECTION: set nasa temperature break value (range)
         # ! min [1000 K]
         nasa_temperature_break_min_value = TEMPERATURE_BREAK_NASA7_1000_K if self.nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_1000_K
@@ -116,6 +123,7 @@ class HSGs:
         self,
         temperature: Temperature,
         prop_name: Literal["enthalpy", "entropy", "gibbs", "heat_capacity"],
+        reaction_ids: bool = False,
         **kwargs
     ) -> Optional[Dict[str, CustomProp]]:
         """
@@ -127,6 +135,8 @@ class HSGs:
             The temperature at which to calculate the property.
         prop_name : Literal["enthalpy", "entropy", "gibbs"]
             The property to calculate. Options are "enthalpy", "entropy", or "gibbs".
+        reaction_ids : bool, optional
+            Whether to use reaction component IDs as keys in the returned dictionary. Default is False.
 
         Returns
         -------
@@ -181,8 +191,12 @@ class HSGs:
                     )
                     continue
 
+                # NOTE: set data based on component formula and state
                 # >> set
-                hsgs_data[id] = res
+                if reaction_ids:
+                    hsgs_data[self.reaction_component_ids[id]] = res
+                else:
+                    hsgs_data[id] = res
 
             # NOTE: return
             return hsgs_data
