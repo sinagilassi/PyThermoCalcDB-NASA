@@ -297,6 +297,96 @@ def G_T(
         return None
 
 
+def Cp_T(
+    component: Component,
+    temperature: Temperature,
+    model_source: ModelSource,
+    component_key: ComponentKey = "Name-Formula",
+    nasa_type: NASAType = "nasa9",
+    **kwargs
+) -> Optional[CustomProp]:
+    """
+    Calculate the heat capacity Cp(T) at specified temperatures for a given component using NASA polynomials.
+
+    Parameters
+    ----------
+    component : Component
+        The chemical component for which to calculate heat capacity.
+    temperature : Temperature
+        The temperature at which to calculate heat capacity.
+    model_source : ModelSource
+        The source of the thermodynamic model data.
+    component_key : ComponentKey, optional
+        The key type used to identify the component, by default "Name-Formula".
+    nasa_type : NASAType, optional
+        The type of NASA polynomial to use ("nasa7" or "nasa9"), by default "nasa9".
+    **kwargs
+        Additional keyword arguments.
+        - mode : Literal['silent', 'log', 'attach'], optional
+            Mode for time measurement logging. Default is 'log'.
+
+    Returns
+    -------
+    Optional[CustomProp]
+        The calculated heat capacity as a CustomProp, or None if calculation fails.
+    """
+    try:
+        # SECTION: Prepare source
+        Source_ = Source(
+            model_source=model_source,
+            component_key=component_key
+        )
+
+        # SECTION: hsg calculation
+        hsg = HSG(
+            source=Source_,
+            component=component,
+            component_key=component_key,
+            nasa_type=nasa_type
+        )
+
+        # SECTION: set nasa temperature break value
+        # ! min [1000K]
+        nasa_temp_break_min_value = TEMPERATURE_BREAK_NASA7_1000_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_1000_K
+        nasa_temperature_break_min = Temperature(
+            value=nasa_temp_break_min_value,
+            unit="K"
+        )
+
+        # ! max [6000K]
+        nasa_temp_break_max_value = TEMPERATURE_BREAK_NASA7_6000_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_6000_K
+        nasa_temperature_break_max = Temperature(
+            value=nasa_temp_break_max_value,
+            unit="K"
+        )
+
+        # SECTION: select nasa type
+        nasa_type_selected = _select_nasa_type(
+            temperature=temperature,
+            break_temp_min=nasa_temperature_break_min,
+            break_temp_max=nasa_temperature_break_max,
+            nasa_type=cast(NASAType, nasa_type)
+        )
+
+        # >> cast
+        nasa_type_selected = cast(
+            NASARangeType,
+            nasa_type_selected
+        )
+
+        # NOTE: Calculate heat capacity
+        res = hsg.calc_heat_capacity(
+            temperature=temperature,
+            nasa_type=nasa_type_selected
+        )
+
+        return res
+    except Exception as e:
+        logger.exception(
+            f"Error calculating heat capacity for component {component} at temperature {temperature.value} K using {nasa_type} coefficients: {e}")
+        return None
+
+
 @measure_time
 def dG_rxn_STD(
     reaction: Reaction,
