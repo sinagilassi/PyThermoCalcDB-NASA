@@ -10,10 +10,10 @@ from ..utils.tools import _select_nasa_type
 from ..configs.constants import (
     NASARangeType,
     NASAType,
-    TEMPERATURE_BREAK_NASA7_2000_K,
+    TEMPERATURE_BREAK_NASA7_200_K,
     TEMPERATURE_BREAK_NASA7_1000_K,
     TEMPERATURE_BREAK_NASA7_6000_K,
-    TEMPERATURE_BREAK_NASA9_2000_K,
+    TEMPERATURE_BREAK_NASA9_200_K,
     TEMPERATURE_BREAK_NASA9_1000_K,
     TEMPERATURE_BREAK_NASA9_6000_K,
 )
@@ -115,7 +115,7 @@ class HSGs:
     def calc_components_hsg(
         self,
         temperature: Temperature,
-        prop_name: Literal["enthalpy", "entropy", "gibbs"],
+        prop_name: Literal["enthalpy", "entropy", "gibbs", "heat_capacity"],
         **kwargs
     ) -> Optional[Dict[str, CustomProp]]:
         """
@@ -161,6 +161,8 @@ class HSGs:
                     prop_func = hsg.calc_absolute_entropy
                 elif prop_name == "gibbs":
                     prop_func = hsg.calc_gibbs_free_energy
+                elif prop_name == "heat_capacity":
+                    prop_func = hsg.calc_heat_capacity
                 else:
                     logger.error(f"Invalid prop_name: {prop_name}")
                     return None
