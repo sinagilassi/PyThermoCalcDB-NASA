@@ -255,7 +255,7 @@ print(f"dG_rxn_STD_WGS: {dG_rxn_STD_WGS}")
 # Equilibrium constant of reaction at standard conditions
 Keq_WGS = Keq(
     reaction=reaction,
-    temperature=Temperature(value=398.15, unit='K'),
+    temperature=Temperature(value=1000, unit='K'),
     model_source=model_source
 )
 print(f"Keq_WGS: {Keq_WGS}")
