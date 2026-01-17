@@ -29,12 +29,12 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
 ]
 dependencies = [
-    "pycuc>=2.3.2",
+    "pycuc>=2.4.0",
     "rich>=14.2.0",
-    "pythermocalcdb",
-    "pythermodb",
-    "pythermodb-settings",
-    "pythermolinkdb",
+    "pythermocalcdb>=0.7.6",
+    "pythermodb>=1.12.1",
+    "pythermodb-settings>=0.2.1",
+    "pythermolinkdb>=1.4.9",
     "pyreactlab-core>=0.1.3",
 ]
 
