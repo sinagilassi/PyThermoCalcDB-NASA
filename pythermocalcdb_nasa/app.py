@@ -442,7 +442,8 @@ def dG_rxn_STD(
         # NOTE: Calculate standard Gibbs free energy change of the reaction
         G_i_IG: Dict[str, CustomProp] | None = hsgs.calc_components_hsg(
             temperature=temperature,
-            prop_name="gibbs"
+            prop_name="gibbs",
+            reaction_ids=True
         )
 
         if G_i_IG is None:
@@ -523,7 +524,8 @@ def dS_rxn_STD(
         # NOTE: Calculate standard entropy change of the reaction
         S_i_IG: Dict[str, CustomProp] | None = hsgs.calc_components_hsg(
             temperature=temperature,
-            prop_name="entropy"
+            prop_name="entropy",
+            reaction_ids=True
         )
 
         if S_i_IG is None:
@@ -604,7 +606,8 @@ def dH_rxn_STD(
         # NOTE: Calculate standard enthalpy change of the reaction
         H_i_IG: Dict[str, CustomProp] | None = hsgs.calc_components_hsg(
             temperature=temperature,
-            prop_name="enthalpy"
+            prop_name="enthalpy",
+            reaction_ids=True
         )
 
         if H_i_IG is None:
