@@ -51,8 +51,12 @@ def _select_nasa_type(
             return "nasa7_200_1000_K" if nasa_type == "nasa7" else "nasa9_200_1000_K"
         elif T_break_min < T <= T_break_max:
             return "nasa7_1000_6000_K" if nasa_type == "nasa7" else "nasa9_1000_6000_K"
-        else:
+        elif T > T_break_max:
             return "nasa7_6000_20000_K" if nasa_type == "nasa7" else "nasa9_6000_20000_K"
+        else:
+            raise ValueError(
+                f"Temperature {T} K is out of expected range."
+            )
     except Exception as e:
         logger.exception(f"Error selecting NASA type: {e}")
         raise
