@@ -310,6 +310,7 @@ def G_T(
         return None
 
 
+@measure_time
 def Cp_T(
     component: Component,
     temperature: Temperature,
