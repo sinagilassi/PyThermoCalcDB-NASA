@@ -113,7 +113,15 @@ temperature = Temperature(
 H_CO2_300K = H_T(
     component=CO2,
     temperature=temperature,
-    model_source=model_source
+    model_source=model_source,
+)
+print(f"H_CO2_300K: {H_CO2_300K}")
+
+H_CO2_300K = H_T(
+    component=CO2,
+    temperature=temperature,
+    model_source=model_source,
+    basis="mass"
 )
 print(f"H_CO2_300K: {H_CO2_300K}")
 
@@ -124,7 +132,19 @@ S_CH4_400K = S_T(
         value=400.0,
         unit='K'
     ),
-    model_source=model_source
+    model_source=model_source,
+    basis="molar"
+)
+print(f"S_CH4_400K: {S_CH4_400K}")
+
+S_CH4_400K = S_T(
+    component=CH4,
+    temperature=Temperature(
+        value=400.0,
+        unit='K'
+    ),
+    model_source=model_source,
+    basis="mass"
 )
 print(f"S_CH4_400K: {S_CH4_400K}")
 
@@ -139,6 +159,17 @@ G_CO2_500K = G_T(
 )
 print(f"G_CO2_500K: {G_CO2_500K}")
 
+G_CO2_500K = G_T(
+    component=CO2,
+    temperature=Temperature(
+        value=500.0,
+        unit='K'
+    ),
+    model_source=model_source,
+    basis="mass"
+)
+print(f"G_CO2_500K: {G_CO2_500K}")
+
 # NOTE: heat capacity of CH4 at 600 K
 Cp_CH4_600K = Cp_T(
     component=CH4,
@@ -147,5 +178,16 @@ Cp_CH4_600K = Cp_T(
         unit='K'
     ),
     model_source=model_source
+)
+print(f"Cp_CH4_600K: {Cp_CH4_600K}")
+
+Cp_CH4_600K = Cp_T(
+    component=CH4,
+    temperature=Temperature(
+        value=600.0,
+        unit='K'
+    ),
+    model_source=model_source,
+    basis="mass"
 )
 print(f"Cp_CH4_600K: {Cp_CH4_600K}")
