@@ -9,7 +9,7 @@ from pyThermoDB.thermodbX import build_component_thermodb_from_reference_source,
 from rich import print
 from pythermodb_settings.references import extract_reference_components, check_reference_component_availability
 # local
-from reference_content_nasa import REFERENCE_CONTENT
+from reference_content_nasa_filtered import REFERENCE_CONTENT
 
 # NOTE: logging
 logging.basicConfig(level=logging.INFO)
@@ -26,7 +26,7 @@ print(f"db_path: {db_path}")
 # source reference file path
 reference_file_path = os.path.join(
     parent_path,
-    'reference_content.yaml'
+    'reference_content_nasa_filtered.yaml'
 )
 print(f"reference_file_path: {reference_file_path}")
 

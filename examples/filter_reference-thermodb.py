@@ -29,7 +29,7 @@ print(f"reference_file_path: {reference_file_path}")
 
 # yaml reference content source
 reference_content_filtered = os.path.join(
-    parent_path, 'reference_content_nasa_filtered.yaml')
+    parent_path, 'reference_content_filtered.yaml')
 print(f"reference_content_filtered: {reference_content_filtered}")
 
 # -------------------------------------------------------------------
