@@ -189,7 +189,7 @@ temperature = Temperature(
 H_CO2_300K = H_T(
     component=CO2,
     temperature=temperature,
-    model_source=model_source
+    model_source=model_source,
 )
 print(f"H_CO2_300K: {H_CO2_300K}")
 
@@ -232,7 +232,8 @@ print(f"Cp_CH4_600K: {Cp_CH4_600K}")
 dH_rxn_STD_WGS = dH_rxn_STD(
     reaction=reaction,
     temperature=Temperature(value=398.15, unit='K'),
-    model_source=model_source
+    model_source=model_source,
+    mode="log",
 )
 print(f"dH_rxn_STD_WGS: {dH_rxn_STD_WGS}")
 
@@ -240,7 +241,8 @@ print(f"dH_rxn_STD_WGS: {dH_rxn_STD_WGS}")
 dS_rxn_STD_WGS = dS_rxn_STD(
     reaction=reaction,
     temperature=Temperature(value=398.15, unit='K'),
-    model_source=model_source
+    model_source=model_source,
+    mode="log",
 )
 print(f"dS_rxn_STD_WGS: {dS_rxn_STD_WGS}")
 
@@ -248,7 +250,8 @@ print(f"dS_rxn_STD_WGS: {dS_rxn_STD_WGS}")
 dG_rxn_STD_WGS = dG_rxn_STD(
     reaction=reaction,
     temperature=Temperature(value=398.15, unit='K'),
-    model_source=model_source
+    model_source=model_source,
+    mode="log",
 )
 print(f"dG_rxn_STD_WGS: {dG_rxn_STD_WGS}")
 
@@ -256,6 +259,7 @@ print(f"dG_rxn_STD_WGS: {dG_rxn_STD_WGS}")
 Keq_WGS = Keq(
     reaction=reaction,
     temperature=Temperature(value=1000, unit='K'),
-    model_source=model_source
+    model_source=model_source,
+    mode="log",
 )
 print(f"Keq_WGS: {Keq_WGS}")

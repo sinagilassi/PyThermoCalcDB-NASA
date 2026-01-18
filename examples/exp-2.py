@@ -114,6 +114,7 @@ H_CO2_300K = H_T(
     component=CO2,
     temperature=temperature,
     model_source=model_source,
+    mode="log",
 )
 print(f"H_CO2_300K: {H_CO2_300K}")
 
@@ -121,7 +122,8 @@ H_CO2_300K = H_T(
     component=CO2,
     temperature=temperature,
     model_source=model_source,
-    basis="mass"
+    basis="mass",
+    mode="log",
 )
 print(f"H_CO2_300K: {H_CO2_300K}")
 
@@ -133,7 +135,8 @@ S_CH4_400K = S_T(
         unit='K'
     ),
     model_source=model_source,
-    basis="molar"
+    basis="molar",
+    mode="log"
 )
 print(f"S_CH4_400K: {S_CH4_400K}")
 
@@ -144,7 +147,8 @@ S_CH4_400K = S_T(
         unit='K'
     ),
     model_source=model_source,
-    basis="mass"
+    basis="mass",
+    mode="log"
 )
 print(f"S_CH4_400K: {S_CH4_400K}")
 
@@ -155,7 +159,8 @@ G_CO2_500K = G_T(
         value=500.0,
         unit='K'
     ),
-    model_source=model_source
+    model_source=model_source,
+    basis="molar"
 )
 print(f"G_CO2_500K: {G_CO2_500K}")
 
@@ -166,7 +171,8 @@ G_CO2_500K = G_T(
         unit='K'
     ),
     model_source=model_source,
-    basis="mass"
+    basis="mass",
+    mode="log"
 )
 print(f"G_CO2_500K: {G_CO2_500K}")
 
@@ -177,7 +183,8 @@ Cp_CH4_600K = Cp_T(
         value=600.0,
         unit='K'
     ),
-    model_source=model_source
+    model_source=model_source,
+    mode="log",
 )
 print(f"Cp_CH4_600K: {Cp_CH4_600K}")
 
@@ -188,6 +195,7 @@ Cp_CH4_600K = Cp_T(
         unit='K'
     ),
     model_source=model_source,
-    basis="mass"
+    basis="mass",
+    mode="log",
 )
 print(f"Cp_CH4_600K: {Cp_CH4_600K}")
