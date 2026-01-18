@@ -54,3 +54,6 @@ TEMPERATURE_BREAK_NASA9_200_K = 200.0
 TEMPERATURE_BREAK_NASA9_1000_K = 1000.0  # temperature
 # temperature break for NASA9 polynomials in K
 TEMPERATURE_BREAK_NASA9_6000_K = 6000.0
+
+# SECTION: Basis types
+BasisType = Literal["molar", "mass"]
