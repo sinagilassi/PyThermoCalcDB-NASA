@@ -24,11 +24,13 @@ db_path = os.path.join(parent_path, 'thermodb')
 print(f"db_path: {db_path}")
 
 # source reference file path
-reference_file_path = os.path.join(
-    parent_path,
-    'reference_content_nasa.yaml'
-)
+reference_file_path = os.path.join(parent_path, 'reference_content.yaml')
 print(f"reference_file_path: {reference_file_path}")
+
+# yaml reference content source
+reference_content_filtered = os.path.join(
+    parent_path, 'reference_content_nasa_filtered.yaml')
+print(f"reference_content_filtered: {reference_content_filtered}")
 
 # -------------------------------------------------------------------
 # SECTION: components to build thermodb for
@@ -66,41 +68,16 @@ print(f"availability_results:")
 print(availability_results)
 
 # -------------------------------------------------------------------
-# SECTION: build component thermodb from reference
+# SECTION: extract reference components
 # -------------------------------------------------------------------
-
-# NOTE: ignore state for specific properties
-ignore_state_props = [
-    'nasa9_200_1000_K',
-    'nasa9_1000_6000_K',
-    'nasa9_6000_20000_K'
-]
-
-# SECTION: reference source
-# SECTION: reference source
-REFERENCE_SOURCE = ReferenceContentSource(
-    content=REFERENCE_CONTENT,
+result = extract_reference_components(
+    reference_file=Path(reference_file_path),
+    components=components,
+    component_key="Name-Formula",    # or any ComponentKey variant
+    separator_symbol="-",
+    case=None,
+    save_reference=True,
+    output_path=reference_content_filtered,
+    mode="log"
 )
-
-# SECTION: build component thermodb from reference
-for comp in components:
-    comp_id = f"{comp.name}-{comp.formula}-{comp.state}-nasa-1"
-    logger.info(f"Building thermodb for component: {comp_id}")
-
-    thermodb_component: ComponentThermoDB | None = build_component_thermodb_from_reference_source(
-        component=comp,
-        reference_source=REFERENCE_SOURCE,
-        component_key='Formula-State',
-        ignore_state_props=ignore_state_props,
-        check_labels=False,
-        thermodb_name=comp_id,
-        thermodb_save=True,
-        thermodb_save_path=db_path,
-        include_data=False,
-    )
-
-    if thermodb_component is not None:
-        logger.info(f"Successfully built thermodb for component: {comp_id}")
-        print(thermodb_component.thermodb.check())
-    else:
-        logger.error(f"Failed to build thermodb for component: {comp_id}")
+print(result["matched"], result["missing"], result["saved_to"])
