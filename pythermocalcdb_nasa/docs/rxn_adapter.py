@@ -21,7 +21,18 @@ class RXNAdapter:
     """
     Adapter class for reaction calculations.
 
-
+    Methods
+    -------
+    dH_rxn_std
+        Calculate standard enthalpy change of the reaction.
+    dS_rxn_std
+        Calculate standard entropy change of the reaction.
+    dG_rxn_std
+        Calculate standard Gibbs free energy change of the reaction.
+    Keq
+        Calculate the equilibrium constant of the reaction.
+    Keq_vh_shortcut
+        Calculate the equilibrium constant of the reaction using van't Hoff shortcut.
     """
 
     def __init__(self, reaction: Reaction):
