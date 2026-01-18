@@ -32,8 +32,8 @@ from pyThermoCalcDB.thermo.heat_capacity import (
 )
 # locals
 from ..thermo.extractor import DataExtractor
-from ..utils.tools import _require_coeffs
-from ..configs.constants import NASAType, NASARangeType
+from ..utils.tools import _require_coeffs, _energy_or_entropy_to_mass_basis
+from ..configs.constants import NASAType, NASARangeType, BasisType
 
 # NOTE: set up logger
 logger = logging.getLogger(__name__)
@@ -72,12 +72,17 @@ class HSG(DataExtractor):
     req_coeffs_NASA7 = ("a1", "a2", "a3", "a4", "a5", "a6", "a7")
     req_coeffs_NASA9 = ("a1", "a2", "a3", "a4", "a5", "a6", "a7", "b1", "b2")
 
+    # NOTE: props
+    req_props = ("MW",)
+    _props = None
+
     def __init__(
             self,
             source: Source,
             component: Component,
             component_key: ComponentKey,
-            nasa_type: NASAType
+            nasa_type: NASAType,
+            basis: BasisType = "molar",
     ):
         """
         Initialize the HSG extractor with the given data source and component key.
@@ -92,6 +97,8 @@ class HSG(DataExtractor):
             The key type used to identify the component.
         nasa_type : NASAType
             The type of NASA polynomial to extract.
+        basis : BasisType, optional
+            The basis type for the calculations (default is "molar").
         """
         # LINK: initialize parent
         super().__init__(source=source)
@@ -100,6 +107,8 @@ class HSG(DataExtractor):
         self.component = component
         # NOTE: set component key
         self.component_key = component_key
+        # NOTE: set basis
+        self.basis = basis
 
         # SECTION: set component id
         self.component_id: str = cast(
@@ -134,6 +143,22 @@ class HSG(DataExtractor):
             self.nasa7_6000_20000_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
                 prop_name="nasa7_6000_20000_K",
             )
+
+    @property
+    def props(self) -> Optional[Dict[str, float]]:
+        """
+        Get the component properties.
+
+        Returns
+        -------
+        Optional[Dict[str, float]]
+            The component properties if available, otherwise None.
+        """
+        return self._props
+
+    @props.setter
+    def props(self, value: Optional[Dict[str, float]]):
+        self._props = value
 
     def _extract_nasa_coefficients(
             self,
@@ -248,10 +273,28 @@ class HSG(DataExtractor):
             if pack is None:
                 return None
 
+            # NOTE: set props
+            self.props = self._set_props(coeffs)
+
             return pack
         except Exception as e:
             logger.exception(
                 f"Error setting NASA coefficients: {e}")
+            return None
+
+    def _set_props(
+            self,
+            coeffs
+    ) -> Optional[Dict[str, float]]:
+        """
+        Extract required properties from the coefficient pack.
+        """
+        try:
+            # SECTION: set properties
+            return _require_coeffs(coeffs, self.req_props)
+        except Exception as e:
+            logger.exception(
+                f"Error setting properties: {e}")
             return None
 
     def calc_absolute_enthalpy(
@@ -316,6 +359,17 @@ class HSG(DataExtractor):
                 logger.warning(
                     f"Enthalpy calculation returned None for type {nasa_type} at temperature {temperature}.")
                 return None
+
+            # NOTE: convert to mass basis if needed
+            if (
+                self.basis == "mass" and
+                self.props is not None and
+                "MW" in self.props
+            ):
+                enthalpy = _energy_or_entropy_to_mass_basis(
+                    value=enthalpy,
+                    mw_g_per_mol=self.props["MW"]
+                )
 
             return enthalpy
         except Exception as e:
@@ -384,6 +438,17 @@ class HSG(DataExtractor):
                 logger.warning(
                     f"Entropy calculation returned None for type {nasa_type} at temperature {temperature}.")
                 return None
+
+            # NOTE: convert to mass basis if needed
+            if (
+                self.basis == "mass" and
+                self.props is not None and
+                "MW" in self.props
+            ):
+                entropy = _energy_or_entropy_to_mass_basis(
+                    value=entropy,
+                    mw_g_per_mol=self.props["MW"]
+                )
 
             return entropy
         except Exception as e:
@@ -455,6 +520,17 @@ class HSG(DataExtractor):
                     f"Gibbs free energy calculation returned None for type {nasa_type} at temperature {temperature}.")
                 return None
 
+            # NOTE: convert to mass basis if needed
+            if (
+                self.basis == "mass" and
+                self.props is not None and
+                "MW" in self.props
+            ):
+                gibbs_free_energy = _energy_or_entropy_to_mass_basis(
+                    value=gibbs_free_energy,
+                    mw_g_per_mol=self.props["MW"]
+                )
+
             return gibbs_free_energy
         except Exception as e:
             logger.exception(
@@ -522,6 +598,18 @@ class HSG(DataExtractor):
                 logger.warning(
                     f"Heat capacity calculation returned None for type {nasa_type} at temperature {temperature}.")
                 return None
+
+            # NOTE: convert to mass basis if needed
+            if (
+                self.basis == "mass" and
+                self.props is not None and
+                "MW" in self.props
+            ):
+                heat_capacity = _energy_or_entropy_to_mass_basis(
+                    value=heat_capacity,
+                    mw_g_per_mol=self.props["MW"]
+                )
+
             return heat_capacity
         except Exception as e:
             logger.exception(
