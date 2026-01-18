@@ -26,7 +26,7 @@ print(f"db_path: {db_path}")
 # source reference file path
 reference_file_path = os.path.join(
     parent_path,
-    'reference_content_nasa.yaml'
+    'reference_content.yaml'
 )
 print(f"reference_file_path: {reference_file_path}")
 

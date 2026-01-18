@@ -10,9 +10,7 @@ from pythermodb_settings.models import (
     Component,
     ComponentRule,
     ComponentThermoDBSource,
-    MixtureThermoDBSource
 )
-from pyThermoDB.core import TableMatrixData
 
 # check version
 print(ptdblink.__version__)
