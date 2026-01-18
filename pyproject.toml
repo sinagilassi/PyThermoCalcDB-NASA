@@ -33,7 +33,7 @@ dependencies = [
     "rich>=14.2.0",
     "pythermocalcdb>=0.7.6",
     "pythermodb>=1.12.2",
-    "pythermodb-settings>=0.2.2",
+    "pythermodb-settings>=0.2.3",
     "pythermolinkdb>=1.4.9",
     "pyreactlab-core>=0.1.3",
 ]
