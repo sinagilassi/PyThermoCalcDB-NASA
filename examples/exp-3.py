@@ -73,12 +73,12 @@ CH4 = Component(
 H2O_thermodb_file = os.path.join(
     current_dir,
     'thermodb',
-    'water-H2O-g-nasa-1.pkl'
+    'dihydrogen monoxide-H2O-g-nasa-1.pkl'
 )
 
 # water gas component
 H2O = Component(
-    name='water',
+    name='dihydrogen monoxide',
     formula='H2O',
     state='g'
 )

@@ -26,7 +26,7 @@ print(f"db_path: {db_path}")
 # source reference file path
 reference_file_path = os.path.join(
     parent_path,
-    'reference_content_nasa_filtered.yaml'
+    'reference_content_filtered.yaml'
 )
 print(f"reference_file_path: {reference_file_path}")
 
@@ -65,6 +65,9 @@ availability_results = check_reference_component_availability(
 print(f"availability_results:")
 print(availability_results)
 
+components_matched: List[Component] = availability_results['matched_components']
+print(f"components matched: {components_matched}")
+
 # -------------------------------------------------------------------
 # SECTION: build component thermodb from reference
 # -------------------------------------------------------------------
@@ -83,7 +86,7 @@ REFERENCE_SOURCE = ReferenceContentSource(
 )
 
 # SECTION: build component thermodb from reference
-for comp in components:
+for comp in components_matched:
     comp_id = f"{comp.name}-{comp.formula}-{comp.state}-nasa-1"
     logger.info(f"Building thermodb for component: {comp_id}")
 

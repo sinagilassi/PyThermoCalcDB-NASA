@@ -4,8 +4,6 @@ from pathlib import Path
 import logging
 from typing import List
 from pythermodb_settings.models import Component
-from pyThermoDB import build_component_thermodb_from_reference, ComponentThermoDB
-from pyThermoDB.thermodbX import build_component_thermodb_from_reference_source, ReferenceContentSource
 from rich import print
 from pythermodb_settings.references import extract_reference_components, check_reference_component_availability
 # local
@@ -67,12 +65,16 @@ availability_results = check_reference_component_availability(
 print(f"availability_results:")
 print(availability_results)
 
+# components matched: availability_results['matched_components']
+components_matched: List[Component] = availability_results['matched_components']
+print(f"components matched: {components_matched}")
+
 # -------------------------------------------------------------------
 # SECTION: extract reference components
 # -------------------------------------------------------------------
 result = extract_reference_components(
     reference_file=Path(reference_file_path),
-    components=components,
+    components=components_matched,
     component_key="Name-Formula",    # or any ComponentKey variant
     separator_symbol="-",
     case=None,
