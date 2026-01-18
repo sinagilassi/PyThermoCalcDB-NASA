@@ -16,7 +16,8 @@ from .configs.constants import (
     TEMPERATURE_BREAK_NASA7_6000_K,
     TEMPERATURE_BREAK_NASA9_1000_K,
     TEMPERATURE_BREAK_NASA9_6000_K,
-    NASARangeType
+    NASARangeType,
+    BasisType
 )
 from .utils.tools import _select_nasa_type
 
@@ -31,6 +32,7 @@ def H_T(
     model_source: ModelSource,
     component_key: ComponentKey = "Name-Formula",
     nasa_type: NASAType = "nasa9",
+    basis: BasisType = "molar",
     **kwargs
 ) -> Optional[CustomProp]:
     """
@@ -48,6 +50,8 @@ def H_T(
         The key type used to identify the component, by default "Name-Formula".
     nasa_type : NASAType, optional
         The type of NASA polynomial to use ("nasa7" or "nasa9"), by default "nasa9".
+    basis : BasisType, optional
+        The basis for the calculation ("molar" or "mass"), by default "molar".
     **kwargs
         Additional keyword arguments.
         - mode : Literal['silent', 'log', 'attach'], optional
@@ -70,7 +74,8 @@ def H_T(
             source=Source_,
             component=component,
             component_key=component_key,
-            nasa_type=nasa_type
+            nasa_type=nasa_type,
+            basis=basis
         )
 
         # SECTION: set nasa temperature break value
@@ -122,6 +127,7 @@ def S_T(
     model_source: ModelSource,
     component_key: ComponentKey = "Name-Formula",
     nasa_type: NASAType = "nasa9",
+    basis: BasisType = "molar",
     **kwargs
 ) -> Optional[CustomProp]:
     """
@@ -139,6 +145,8 @@ def S_T(
         The key type used to identify the component, by default "Name-Formula".
     nasa_type : NASAType, optional
         The type of NASA polynomial to use ("nasa7" or "nasa9"), by default "nasa9".
+    basis : BasisType, optional
+        The basis for the calculation ("molar" or "mass"), by default "molar".
     **kwargs
         Additional keyword arguments.
         - mode : Literal['silent', 'log', 'attach'], optional
@@ -161,7 +169,8 @@ def S_T(
             source=Source_,
             component=component,
             component_key=component_key,
-            nasa_type=nasa_type
+            nasa_type=nasa_type,
+            basis=basis
         )
 
         # SECTION: set nasa temperature break value
@@ -213,6 +222,7 @@ def G_T(
     model_source: ModelSource,
     component_key: ComponentKey = "Name-Formula",
     nasa_type: NASAType = "nasa9",
+    basis: BasisType = "molar",
     **kwargs
 ) -> Optional[CustomProp]:
     """
@@ -230,6 +240,8 @@ def G_T(
         The key type used to identify the component, by default "Name-Formula".
     nasa_type : NASAType, optional
         The type of NASA polynomial to use ("nasa7" or "nasa9"), by default "nasa9".
+    basis : BasisType, optional
+        The basis for the calculation ("molar" or "mass"), by default "molar".
     **kwargs
         Additional keyword arguments.
         - mode : Literal['silent', 'log', 'attach'], optional
@@ -252,7 +264,8 @@ def G_T(
             source=Source_,
             component=component,
             component_key=component_key,
-            nasa_type=nasa_type
+            nasa_type=nasa_type,
+            basis=basis
         )
 
         # SECTION: set nasa temperature break value
@@ -303,6 +316,7 @@ def Cp_T(
     model_source: ModelSource,
     component_key: ComponentKey = "Name-Formula",
     nasa_type: NASAType = "nasa9",
+    basis: BasisType = "molar",
     **kwargs
 ) -> Optional[CustomProp]:
     """
@@ -320,6 +334,8 @@ def Cp_T(
         The key type used to identify the component, by default "Name-Formula".
     nasa_type : NASAType, optional
         The type of NASA polynomial to use ("nasa7" or "nasa9"), by default "nasa9".
+    basis : BasisType, optional
+        The basis for the calculation ("molar" or "mass"), by default "molar".
     **kwargs
         Additional keyword arguments.
         - mode : Literal['silent', 'log', 'attach'], optional
@@ -342,7 +358,8 @@ def Cp_T(
             source=Source_,
             component=component,
             component_key=component_key,
-            nasa_type=nasa_type
+            nasa_type=nasa_type,
+            basis=basis
         )
 
         # SECTION: set nasa temperature break value
