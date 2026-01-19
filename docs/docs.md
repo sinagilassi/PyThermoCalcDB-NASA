@@ -1,33 +1,50 @@
-# Methods & API
+# 📚 Methods & API
 
-This page captures the core calculation surface. All functions live in `pythermocalcdb_nasa.app` and return `CustomProp` objects from `pythermodb_settings`.
+Core calculations live in `pythermocalcdb_nasa.app` and return `CustomProp` objects from `pythermodb_settings`.
 
-## Common arguments
-- `component` / `reaction`: `Component` or `Reaction` objects that carry identifiers.
-- `temperature`: `Temperature` with `value` and `unit="K"`.
-- `model_source`: built by `pyThermoLinkDB.load_and_build_model_source(...)` using component ThermoDB pickles.
-- `nasa_type`: `"nasa7"` or `"nasa9"` (defaults to `"nasa9"`).
+## 🧩 Common arguments
+
+- `component` / `reaction`: `Component` or `Reaction` identifiers.
+- `temperature`: `Temperature(value, unit="K")`.
+- `model_source`: built via `pyThermoLinkDB.load_and_build_model_source(...)` from component ThermoDB pickles.
+- `nasa_type`: `"nasa7"` or `"nasa9"` (default `"nasa9"`).
 - `basis`: `"molar"` or `"mass"` for species properties.
-- `component_key`: how components are keyed in your sources (e.g., `"Name-Formula"`).
-- `mode` (optional kwarg): `"silent"`, `"log"`, or `"attach"` for timing logs from `measure_time`.
+- `component_key`: how components are keyed (e.g., `"Name-Formula"`).
+- `mode` (kwarg): `"silent"`, `"log"`, or `"attach"` for timing logs.
 
-## Species thermodynamic properties
-Use the functions below to evaluate NASA polynomials for a single component. The temperature range is selected automatically from the NASA coefficients based on breakpoints.
+## 🔥 Species thermodynamic properties
+
+Use these to evaluate NASA polynomials for a single component. Temperature breakpoints are selected automatically.
+
+| Function | Purpose | Args | Returns |
+| --- | --- | --- | --- |
+| `H_T` | Absolute enthalpy `H°(T)` | `component`, `temperature`, `model_source`, `basis`, `nasa_type`, `component_key`, `**kwargs` | `CustomProp` (value + unit + metadata) or `None` |
+| `S_T` | Absolute entropy `S°(T)` | same as above | `CustomProp` or `None` |
+| `G_T` | Gibbs free energy `G°(T)` | same as above | `CustomProp` or `None` |
+| `Cp_T` | Heat capacity `Cp(T)` | same as above | `CustomProp` or `None` |
 
 ```python
 from pythermocalcdb_nasa import H_T, S_T, G_T, Cp_T
 
-# enthalpy, entropy, Gibbs free energy, and heat capacity
 H = H_T(component=CO2, temperature=T300K, model_source=model_source, basis="molar")
 S = S_T(component=CO2, temperature=T300K, model_source=model_source, basis="mass")
 G = G_T(component=CO2, temperature=T500K, model_source=model_source)
 Cp = Cp_T(component=CH4, temperature=T600K, model_source=model_source)
 ```
 
-Return values include magnitude, units, and provenance metadata from the underlying NASA source. See `examples/exp-2.py` for a complete workflow that loads two pickles and queries properties at several temperatures.
+See `examples/exp-2.py` for a full species workflow.
 
-## Reaction thermodynamics and equilibrium
-Reaction-level helpers wrap component properties and the reaction stoichiometry from `pyreactlab_core`.
+## ⚖️ Reaction thermodynamics and equilibrium
+
+Helpers wrap species properties plus stoichiometry from `pyreactlab_core`.
+
+| Function | Purpose | Args | Returns |
+| --- | --- | --- | --- |
+| `dH_rxn_STD` | Reaction enthalpy change `ΔH°(T)` | `reaction`, `temperature`, `model_source`, `nasa_type`, `component_key`, `**kwargs` | `CustomProp` or `None` |
+| `dS_rxn_STD` | Reaction entropy change `ΔS°(T)` | same as above | `CustomProp` or `None` |
+| `dG_rxn_STD` | Reaction Gibbs free energy `ΔG°(T)` | same as above | `CustomProp` or `None` |
+| `Keq` | Equilibrium constant from `ΔG°(T)` | `reaction`, `temperature`, `model_source`, `nasa_type`, `component_key`, `**kwargs` | `CustomProp` or `None` |
+| `Keq_vh_shortcut` | van’t Hoff shortcut using `ΔH°(298 K)` | `reaction`, `temperature`, `model_source`, `nasa_type`, `component_key`, `**kwargs` | `CustomProp` or `None` |
 
 ```python
 from pythermocalcdb_nasa import dH_rxn_STD, dS_rxn_STD, dG_rxn_STD, Keq, Keq_vh_shortcut
@@ -44,22 +61,14 @@ dS = dS_rxn_STD(reaction=reaction, temperature=T398K, model_source=model_source)
 dG = dG_rxn_STD(reaction=reaction, temperature=T398K, model_source=model_source)
 
 Keq_T = Keq(reaction=reaction, temperature=T1000K, model_source=model_source)
-Keq_vh = Keq_vh_shortcut(
-    reaction=reaction,
-    temperature=T1000K,
-    model_source=model_source,
-    mode="log",
-)
+Keq_vh = Keq_vh_shortcut(reaction=reaction, temperature=T1000K, model_source=model_source, mode="log")
 ```
 
-- `dH_rxn_STD`, `dS_rxn_STD`, `dG_rxn_STD` compute standard-state reaction properties using species NASA data.
-- `Keq` derives the equilibrium constant from `ΔG°(T)`.
-- `Keq_vh_shortcut` applies the van’t Hoff shortcut using `ΔH°(298 K)` and a reference `Keq_STD`.
+`examples/exp-3.py` shows the full reaction workflow.
 
-The water-gas-shift example in `examples/exp-3.py` shows the full setup, including loading the required component pickles.
+## 🏗️ Building a model source
 
-## Building a model source
-All calculations require a `ModelSource`. The examples build it from local NASA pickles packaged in `examples/thermodb`:
+All calculations require a `ModelSource`. The examples build it from NASA pickles packaged in `examples/thermodb`:
 
 ```python
 from pythermodb_settings.models import Component, ComponentThermoDBSource

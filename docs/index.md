@@ -1,14 +1,16 @@
 # PyThermoCalcDB-NASA
 
-NASA-polynomial thermochemistry for species, reactions, and equilibrium calculations. This site is built with MkDocs + Material for deployment on Read the Docs.
+NASA-polynomial thermochemistry for species, reactions, and equilibrium calculations.
 
-## What this library does
+## 🚀 What this library does
+
 - Computes NASA-7/9 ideal-gas properties: `Cp(T)`, `H°(T)`, `S°(T)`, `G°(T)`
 - Evaluates reaction thermodynamics and equilibrium constants
 - Works with PyThermoDB/LinkDB data sources while keeping calculation logic separate from data storage
 - Ships runnable examples and ready-to-use NASA pickles under `examples/thermodb`
 
-## Quick start
+## ⚡ Quick start
+
 ```bash
 pip install pythermocalcdb-nasa
 # examples rely on extra deps:
@@ -38,12 +40,14 @@ Cp = Cp_T(
 print(Cp)  # CustomProp with value, unit, metadata
 ```
 
-## Documentation map
+## 🧭 Documentation map
+
 - Overview & quick start (this page)
 - Methods & API: per-function guidance for species and reaction calculations
 - Examples: how to run each script under `examples/`
 
-## Build the docs locally
+## 🛠️ Build the docs locally
+
 ```bash
 pip install -r docs/requirements.txt
 mkdocs serve   # live preview at http://127.0.0.1:8000
