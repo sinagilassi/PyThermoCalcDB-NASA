@@ -226,8 +226,185 @@ Cp_CH4_600K = Cp_T(
 )
 print(f"Cp_CH4_600K: {Cp_CH4_600K}")
 
+# =======================================
+# NOTE: Dihydrogen (H2) properties
+# =======================================
+# enthalpy
+H_H2 = H_T(
+    component=H2,
+    temperature=Temperature(
+        value=1500.0,
+        unit='K'
+    ),
+    model_source=model_source
+)
+print(f"H_H2: {H_H2}")
 
+# entropy
+S_H2 = S_T(
+    component=H2,
+    temperature=Temperature(
+        value=1500.0,
+        unit='K'
+    ),
+    model_source=model_source
+)
+print(f"S_H2: {S_H2}")
+
+# Gibbs free energy
+G_H2 = G_T(
+    component=H2,
+    temperature=Temperature(
+        value=1500.0,
+        unit='K'
+    ),
+    model_source=model_source
+)
+print(f"G_H2: {G_H2}")
+
+# heat capacity
+Cp_H2 = Cp_T(
+    component=H2,
+    temperature=Temperature(
+        value=298.15,
+        unit='K'
+    ),
+    model_source=model_source
+)
+print(f"Cp_H2: {Cp_H2}")
+
+Cp_H2 = Cp_T(
+    component=H2,
+    temperature=Temperature(
+        value=298.15,
+        unit='K'
+    ),
+    model_source=model_source,
+    basis='mass'
+)
+print(f"Cp_H2: {Cp_H2}")
+
+# =======================================
+# NOTE: CH4 properties
+# =======================================
+# enthalpy
+H_CH4 = H_T(
+    component=CH4,
+    temperature=Temperature(
+        value=1500.0,
+        unit='K'
+    ),
+    model_source=model_source
+)
+print(f"H_CH4: {H_CH4}")
+
+# entropy
+S_CH4 = S_T(
+    component=CH4,
+    temperature=Temperature(
+        value=1500.0,
+        unit='K'
+    ),
+    model_source=model_source
+)
+print(f"S_CH4: {S_CH4}")
+
+# Gibbs free energy
+G_CH4 = G_T(
+    component=CH4,
+    temperature=Temperature(
+        value=1500.0,
+        unit='K'
+    ),
+    model_source=model_source
+)
+print(f"G_CH4: {G_CH4}")
+
+# heat capacity
+Cp_CH4 = Cp_T(
+    component=CH4,
+    temperature=Temperature(
+        value=298.15,
+        unit='K'
+    ),
+    model_source=model_source
+)
+print(f"Cp_CH4: {Cp_CH4}")
+
+# mass basis
+Cp_CH4 = Cp_T(
+    component=CH4,
+    temperature=Temperature(
+        value=298.15,
+        unit='K'
+    ),
+    model_source=model_source,
+    basis='mass'
+)
+print(f"Cp_CH4: {Cp_CH4}")
+
+# =======================================
+# NOTE: H2O properties
+# =======================================
+# enthalpy
+H_H2O = H_T(
+    component=H2O,
+    temperature=Temperature(
+        value=1500.0,
+        unit='K'
+    ),
+    model_source=model_source
+)
+print(f"H_H2O: {H_H2O}")
+
+# entropy
+S_H2O = S_T(
+    component=H2O,
+    temperature=Temperature(
+        value=1500.0,
+        unit='K'
+    ),
+    model_source=model_source
+)
+print(f"S_H2O: {S_H2O}")
+
+# Gibbs free energy
+G_H2O = G_T(
+    component=H2O,
+    temperature=Temperature(
+        value=1500.0,
+        unit='K'
+    ),
+    model_source=model_source
+)
+print(f"G_H2O: {G_H2O}")
+
+# heat capacity
+Cp_H2O = Cp_T(
+    component=H2O,
+    temperature=Temperature(
+        value=298.15,
+        unit='K'
+    ),
+    model_source=model_source
+)
+print(f"Cp_H2O: {Cp_H2O}")
+
+# mass basis
+Cp_H2O = Cp_T(
+    component=H2O,
+    temperature=Temperature(
+        value=298.15,
+        unit='K'
+    ),
+    model_source=model_source,
+    basis='mass'
+)
+print(f"Cp_H2O: {Cp_H2O}")
+
+# =======================================
 # SECTION: reaction properties
+# =======================================
 # enthalpy change of reaction at standard conditions
 dH_rxn_STD_WGS = dH_rxn_STD(
     reaction=reaction,
