@@ -59,6 +59,19 @@ CH4 = Component(
     state='g'
 )
 
+# ! H2
+H2 = Component(
+    name='dihydrogen',
+    formula='H2',
+    state='g'
+)
+
+H2_thermodb_file = os.path.join(
+    current_dir,
+    'thermodb',
+    'dihydrogen-H2-g-nasa-1.pkl'
+)
+
 # =======================================
 # SECTION: create thermodb source
 # ======================================
@@ -71,6 +84,11 @@ CO2_thermodb: ComponentThermoDBSource = ComponentThermoDBSource(
 CH4_thermodb: ComponentThermoDBSource = ComponentThermoDBSource(
     component=CH4,
     source=CH4_thermodb_file
+)
+
+H2_thermodb: ComponentThermoDBSource = ComponentThermoDBSource(
+    component=H2,
+    source=H2_thermodb_file
 )
 
 # =======================================
@@ -91,7 +109,8 @@ CH4_thermodb: ComponentThermoDBSource = ComponentThermoDBSource(
 model_source: ModelSource = load_and_build_model_source(
     thermodb_sources=[
         CO2_thermodb,
-        CH4_thermodb
+        CH4_thermodb,
+        H2_thermodb
     ],
     original_equation_label=False
 )
