@@ -39,6 +39,13 @@ print(ptdb.__version__)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 print(f"current dir: {current_dir}")
 
+# Initialize summary results list
+summary_results = []
+summary_results.append(f"pyThermoLinkDB version: {ptdblink.__version__}")
+summary_results.append(f"pyThermoDB version: {ptdb.__version__}")
+summary_results.append(f"Current directory: {current_dir}")
+summary_results.append("")
+
 # NOTE: thermodb configurations
 # carbon dioxide gas thermodb file
 CO2_thermodb_file = os.path.join(
@@ -177,6 +184,12 @@ print(model_source)
 datasource = model_source.data_source
 equationsource = model_source.equation_source
 
+summary_results.append("=" * 40)
+summary_results.append("MODEL SOURCE")
+summary_results.append("=" * 40)
+# summary_results.append(str(model_source))
+summary_results.append("")
+
 # =======================================
 # ✅ TEST
 # =======================================
@@ -204,6 +217,12 @@ S_CH4_400K = S_T(
 )
 print(f"S_CH4_400K: {S_CH4_400K}")
 
+summary_results.append("=" * 40)
+summary_results.append("TEST RESULTS - Individual Components")
+summary_results.append("=" * 40)
+summary_results.append(f"H_CO2_300K: {H_CO2_300K}")
+summary_results.append(f"S_CH4_400K: {S_CH4_400K}")
+
 # NOTE: Gibbs free energy of CO2 at 500 K
 G_CO2_500K = G_T(
     component=CO2,
@@ -225,6 +244,10 @@ Cp_CH4_600K = Cp_T(
     model_source=model_source
 )
 print(f"Cp_CH4_600K: {Cp_CH4_600K}")
+
+summary_results.append(f"G_CO2_500K: {G_CO2_500K}")
+summary_results.append(f"Cp_CH4_600K: {Cp_CH4_600K}")
+summary_results.append("")
 
 # =======================================
 # NOTE: Dihydrogen (H2) properties
@@ -283,6 +306,14 @@ Cp_H2 = Cp_T(
     basis='mass'
 )
 print(f"Cp_H2: {Cp_H2}")
+
+summary_results.append("\n" + "=" * 40)
+summary_results.append("H2 (Dihydrogen) Properties at 1500K")
+summary_results.append("=" * 40)
+summary_results.append(f"H_H2: {H_H2}")
+summary_results.append(f"S_H2: {S_H2}")
+summary_results.append(f"G_H2: {G_H2}")
+summary_results.append(f"Cp_H2 (molar, 298.15K): {Cp_H2}")
 
 # =======================================
 # NOTE: CH4 properties
@@ -343,6 +374,14 @@ Cp_CH4 = Cp_T(
 )
 print(f"Cp_CH4: {Cp_CH4}")
 
+summary_results.append("\n" + "=" * 40)
+summary_results.append("CH4 (Methane) Properties at 1500K")
+summary_results.append("=" * 40)
+summary_results.append(f"H_CH4: {H_CH4}")
+summary_results.append(f"S_CH4: {S_CH4}")
+summary_results.append(f"G_CH4: {G_CH4}")
+summary_results.append(f"Cp_CH4 (molar, 298.15K): {Cp_CH4}")
+
 # =======================================
 # NOTE: H2O properties
 # =======================================
@@ -402,6 +441,14 @@ Cp_H2O = Cp_T(
 )
 print(f"Cp_H2O: {Cp_H2O}")
 
+summary_results.append("\n" + "=" * 40)
+summary_results.append("H2O (Water) Properties at 1500K")
+summary_results.append("=" * 40)
+summary_results.append(f"H_H2O: {H_H2O}")
+summary_results.append(f"S_H2O: {S_H2O}")
+summary_results.append(f"G_H2O: {G_H2O}")
+summary_results.append(f"Cp_H2O (molar, 298.15K): {Cp_H2O}")
+
 # =======================================
 # SECTION: reaction properties
 # =======================================
@@ -432,6 +479,14 @@ dG_rxn_STD_WGS = dG_rxn_STD(
 )
 print(f"dG_rxn_STD_WGS: {dG_rxn_STD_WGS}")
 
+summary_results.append("\n" + "=" * 40)
+summary_results.append("REACTION PROPERTIES")
+summary_results.append("Reaction: CO(g) + H2O(g) => CO2(g) + H2(g)")
+summary_results.append("=" * 40)
+summary_results.append(f"dH_rxn_STD (398.15K): {dH_rxn_STD_WGS}")
+summary_results.append(f"dS_rxn_STD (398.15K): {dS_rxn_STD_WGS}")
+summary_results.append(f"dG_rxn_STD (398.15K): {dG_rxn_STD_WGS}")
+
 # Equilibrium constant of reaction at standard conditions
 Keq_WGS = Keq(
     reaction=reaction,
@@ -440,3 +495,16 @@ Keq_WGS = Keq(
     mode="log",
 )
 print(f"Keq_WGS: {Keq_WGS}")
+
+summary_results.append(f"Keq (1000K): {Keq_WGS}")
+summary_results.append("")
+
+# =======================================
+# SECTION: Save summary to file
+# =======================================
+# Write all results to summary.txt
+summary_file_path = os.path.join(current_dir, 'summary.txt')
+with open(summary_file_path, 'w') as f:
+    f.write('\n'.join(summary_results))
+
+print(f"\n✅ Summary saved to: {summary_file_path}")

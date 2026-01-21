@@ -1,0 +1,49 @@
+pyThermoLinkDB version: 1.4.9
+pyThermoDB version: 1.12.2
+Current directory: C:\My Drive\apps\PyThermoCalcDB-NASA\examples
+
+========================================
+MODEL SOURCE
+========================================
+
+========================================
+TEST RESULTS - Individual Components
+========================================
+H_CO2_300K: value=-393438.9409053566 unit='J/mol'
+S_CH4_400K: value=197.51222341454707 unit='J/mol.K'
+G_CO2_500K: value=-502649.138334726 unit='J/mol'
+Cp_CH4_600K: value=52.751445532576895 unit='J/mol.K'
+
+
+========================================
+H2 (Dihydrogen) Properties at 1500K
+========================================
+H_H2: value=36288.107022979326 unit='J/mol'
+S_H2: value=178.8447323401817 unit='J/mol.K'
+G_H2: value=-231978.99148729324 unit='J/mol'
+Cp_H2 (molar, 298.15K): value=14294.484501698573 unit='J/kg.K'
+
+========================================
+CH4 (Methane) Properties at 1500K
+========================================
+H_CH4: value=5428.920385274911 unit='J/mol'
+S_CH4: value=281.6155957914548 unit='J/mol.K'
+G_CH4: value=-416994.47330190724 unit='J/mol'
+Cp_CH4 (molar, 298.15K): value=2225.7490927204876 unit='J/kg.K'
+
+========================================
+H2O (Water) Properties at 1500K
+========================================
+H_H2O: value=-193620.97639214367 unit='J/mol'
+S_H2O: value=250.65477143650693 unit='J/mol.K'
+G_H2O: value=-569603.1335469041 unit='J/mol'
+Cp_H2O (molar, 298.15K): value=1864.5449951353396 unit='J/kg.K'
+
+========================================
+REACTION PROPERTIES
+Reaction: CO(g) + H2O(g) => CO2(g) + H2(g)
+========================================
+dH_rxn_STD (398.15K): value=-40640.598455531974 unit='J/mol'
+dS_rxn_STD (398.15K): value=-40.56815645513373 unit='J/mol.K'
+dG_rxn_STD (398.15K): value=-24488.38696292042 unit='J/mol'
+Keq (1000K): value=1.4245384317027154 unit='dimensionless'
