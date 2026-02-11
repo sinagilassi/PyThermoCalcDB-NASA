@@ -490,13 +490,13 @@ summary_results.append(f"dG_rxn_STD (398.15K): {dG_rxn_STD_WGS}")
 # Equilibrium constant of reaction at standard conditions
 Keq_WGS = Keq(
     reaction=reaction,
-    temperature=Temperature(value=1000, unit='K'),
+    temperature=Temperature(value=400, unit='K'),
     model_source=model_source,
     mode="log",
 )
 print(f"Keq_WGS: {Keq_WGS}")
 
-summary_results.append(f"Keq (1000K): {Keq_WGS}")
+summary_results.append(f"Keq (400K): {Keq_WGS}")
 summary_results.append("")
 
 # =======================================

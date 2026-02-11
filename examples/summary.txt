@@ -1,6 +1,6 @@
 pyThermoLinkDB version: 1.4.9
 pyThermoDB version: 1.12.2
-Current directory: C:\My Drive\apps\PyThermoCalcDB-NASA\examples
+Current directory: E:\Python Projects\PyThermoCalcDB-NASA\examples
 
 ========================================
 MODEL SOURCE
@@ -46,4 +46,4 @@ Reaction: CO(g) + H2O(g) => CO2(g) + H2(g)
 dH_rxn_STD (398.15K): value=-40640.598455531974 unit='J/mol'
 dS_rxn_STD (398.15K): value=-40.56815645513373 unit='J/mol.K'
 dG_rxn_STD (398.15K): value=-24488.38696292042 unit='J/mol'
-Keq (1000K): value=1.4245384317027154 unit='dimensionless'
+Keq (400K): value=1541.686592054538 unit='dimensionless'
