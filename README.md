@@ -4,6 +4,7 @@
 ![PyPI](https://img.shields.io/pypi/v/pythermocalcdb-nasa)
 ![Python Version](https://img.shields.io/pypi/pyversions/pythermocalcdb-nasa.svg)
 ![License](https://img.shields.io/pypi/l/pythermocalcdb-nasa)
+[![Download on the App Store](https://img.shields.io/badge/Download_on_the_App_Store-0D0D0D?logo=apple&logoColor=white)](https://apps.apple.com/ca/app/mozithermocalc/id6759209992)
 
 NASA-polynomial thermochemistry for species, reactions, and equilibrium calculations.
 
@@ -13,6 +14,8 @@ NASA-polynomial thermochemistry for species, reactions, and equilibrium calculat
 
 PyThermoCalcDB-NASA is a scientific Python library for evaluating NASA-7 and NASA-9 polynomial thermochemistry for ideal-gas species and reactions. It focuses on reference-state consistency while staying decoupled from how data is stored or sourced.
 
+Calculations can also be done on your mobile with the MoziThermoCalc iOS app: [Download on the App Store](https://apps.apple.com/ca/app/mozithermocalc/id6759209992).
+
 ---
 
 ## ✨ Key Features
@@ -21,6 +24,7 @@ PyThermoCalcDB-NASA is a scientific Python library for evaluating NASA-7 and NAS
 - Species properties: `Cp(T)`, `H^0(T)`, `S^0(T)`, `G^0(T)` on molar or mass basis
 - Reaction properties: `Delta H^0(T)`, `Delta S^0(T)`, `Delta G^0(T)` plus equilibrium constants `K(T)`
 - Van't Hoff shortcut helper (`Keq_vh_shortcut`) using `Delta H^0(298 K)`
+- The same thermochemistry calculations can be done on mobile via the MoziThermoCalc app
 - Clean separation of data (PyThermoDB/LinkDB) from the calculation engine
 - Returns `CustomProp` objects with units and metadata; optional timing logs via `mode`
 
