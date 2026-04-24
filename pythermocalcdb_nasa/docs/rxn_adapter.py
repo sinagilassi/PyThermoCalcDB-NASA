@@ -3,7 +3,7 @@ import logging
 from typing import List, Optional, Union, Dict, Literal, cast
 from pythermodb_settings.models import Temperature, CustomProp
 from pyreactlab_core.models.reaction import Reaction
-from pyThermoCalcDB.reactions.source import (
+from pythermocalcdb.reactions.source import (
     dH_rxn_STD,
     dS_rxn_STD,
     dG_rxn_STD,
