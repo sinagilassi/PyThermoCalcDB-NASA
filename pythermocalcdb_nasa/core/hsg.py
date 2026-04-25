@@ -6,7 +6,7 @@ from pythermodb_settings.models import Component, Temperature, ComponentKey, Cus
 from pythermodb_settings.utils import set_component_id
 from pyThermoLinkDB.thermo import Source
 from pyThermoDB.core import TableEquation
-from pyThermoCalcDB.thermo.enthalpy import (
+from pythermocalcdb.thermo.enthalpy import (
     En_IG_NASA9_polynomial,
     En_IG_NASA9_polynomial_range,
     En_IG_NASA9_polynomial_ranges,
@@ -14,7 +14,7 @@ from pyThermoCalcDB.thermo.enthalpy import (
     En_IG_NASA7_polynomial_range,
     En_IG_NASA7_polynomial_ranges,
 )
-from pyThermoCalcDB.thermo.entropy import (
+from pythermocalcdb.thermo.entropy import (
     S_IG_NASA9_polynomial,
     S_IG_NASA9_polynomial_range,
     S_IG_NASA9_polynomial_ranges,
@@ -22,11 +22,11 @@ from pyThermoCalcDB.thermo.entropy import (
     S_IG_NASA7_polynomial_range,
     S_IG_NASA7_polynomial_ranges,
 )
-from pyThermoCalcDB.thermo.gibbs import (
+from pythermocalcdb.thermo.gibbs import (
     GiFrEn_IG,
     GiFrEn_IG_ranges
 )
-from pyThermoCalcDB.thermo.heat_capacity import (
+from pythermocalcdb.thermo.heat_capacity import (
     Cp_IG_NASA9_polynomial,
     Cp_IG_NASA7_polynomial
 )
