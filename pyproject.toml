@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pythermocalcdb-nasa"
-version = "0.1.1"
+version = "0.1.3"
 description = "A NASA-polynomial thermochemistry engine for reaction and equilibrium calculations."
 readme = "README.md"
 requires-python = ">=3.11"
