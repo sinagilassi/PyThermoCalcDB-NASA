@@ -1,4 +1,5 @@
 # import packages/modules
+from examples.references.reference_3 import REFERENCE_CONTENT
 import os
 import sys
 from rich import print
@@ -21,7 +22,6 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 # locals
-from examples.references.reference_3 import REFERENCE_CONTENT
 
 # check version
 print(ptdblink.__version__)
@@ -59,8 +59,21 @@ H2 = Component(
     state='g'
 )
 
+# ! methane
+CH4 = Component(
+    name='methane',
+    formula='CH4',
+    state='g'
+)
+
 # NOTE: components list
-components: List[Component] = [CO]
+components: List[Component] = [
+    CH4,
+    CO2,
+    H2O,
+    CO,
+    H2,
+]
 
 # ====================================================
 # SECTION: BUILD COMPONENT THERMODB
