@@ -1,5 +1,6 @@
 # import packages/modules
 import os
+import sys
 from rich import print
 from typing import Callable, Dict, Optional, Union, List, Any
 import pyThermoDB as ptdb
@@ -13,6 +14,12 @@ from pythermodb_settings.models import Component
 from pyThermoDB import ComponentThermoDB
 from pyThermoDB import build_component_thermodb_from_reference
 from pyreactlab_core.models.reaction import Reaction
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(CURRENT_DIR))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 # locals
 from examples.references.reference_3 import REFERENCE_CONTENT
 
