@@ -118,3 +118,11 @@ class DataExtractor:
             logger.exception(
                 f"Error retrieving equation source for {prop_name}: {e}")
             raise
+
+    def _get_property_source(
+            self,
+            component: Component,
+            component_key: ComponentKey,
+            prop_names: List[str],
+    ):
+        pass
