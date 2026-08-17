@@ -127,24 +127,23 @@ class HSG(DataExtractor):
         )
 
         # SECTION: retrieve data
+        self.nasa9_coefficients: Optional[Dict[str, float]] = None
+        self.nasa7_coefficients: Optional[Dict[str, float]] = None
+
         if nasa_type == "nasa9":
             # ! ::: extract NASA9 coefficients
-            self.nasa9_coefficients: Optional[Dict[str, float]] = \
-                self._extract_nasa_coefficients_from_property_data(
-                nasa_type=nasa_type
-            ) or \
-                self._extract_nasa_coefficients_from_equation_mode(
-                prop_name=nasa_range_type,
-            )
+            self.nasa9_coefficients = \
+                self._extract_nasa_coefficients(
+                    nasa_type=nasa_type,
+                    nasa_range_type=nasa_range_type
+                )
         elif nasa_type == "nasa7":
             # ! ::: extract NASA7 coefficients
-            self.nasa7_coefficients: Optional[Dict[str, float]] = \
-                self._extract_nasa_coefficients_from_property_data(
-                nasa_type=nasa_type
-            ) or \
-                self._extract_nasa_coefficients_from_equation_mode(
-                prop_name=nasa_range_type,
-            )
+            self.nasa7_coefficients = \
+                self._extract_nasa_coefficients(
+                    nasa_type=nasa_type,
+                    nasa_range_type=nasa_range_type
+                )
         else:
             raise ValueError(f"Invalid NASA type: {nasa_type}")
 
@@ -163,6 +162,30 @@ class HSG(DataExtractor):
     @props.setter
     def props(self, value: Optional[Dict[str, float]]):
         self._props = value
+
+    def _extract_nasa_coefficients(
+            self,
+            nasa_type: NASAType,
+            nasa_range_type: NASARangeType,
+    ) -> Optional[Dict[str, float]]:
+        """
+        Extract NASA coefficients from the active model source.
+
+        Coefficients can be exposed directly by the property source, or as
+        parameters on a range-specific equation source. Property extraction is
+        tried first because some model sources keep NASA table rows as regular
+        properties; if the requested coefficient pack is not complete, the
+        range-specific equation source is used as the fallback.
+        """
+        coefficients = self._extract_nasa_coefficients_from_property_data(
+            nasa_type=nasa_type
+        )
+        if coefficients is not None:
+            return coefficients
+
+        return self._extract_nasa_coefficients_from_equation_mode(
+            prop_name=nasa_range_type,
+        )
 
     # ! ::: extract nasa coefficients from equation mode
     def _extract_nasa_coefficients_from_equation_mode(
@@ -203,7 +226,7 @@ class HSG(DataExtractor):
             return coefficients
         except Exception as e:
             logger.exception(
-                f"Error extracting NASA9 coefficients: {e}")
+                f"Error extracting NASA coefficients from equation source: {e}")
             return None
 
     # ! ::: extract nasa coefficients from property data mode
@@ -235,24 +258,31 @@ class HSG(DataExtractor):
             )
             return None
 
-        # NOTE: extract data
-        # >> get property data
-        prop_src: ComponentPropertySource = self._get_property_source(
-            component=self.component,
-            component_key=cast(ComponentKey, self.component_key),
-            prop_names=coefficient_symbols
-        )
+        # Keep MW when present so mass-basis conversion can use property-source
+        # coefficients. Missing MW must not prevent equation-source fallback.
+        prop_names = [*coefficient_symbols, *self.req_props]
+
+        try:
+            # NOTE: extract data
+            # >> get property data
+            prop_src: ComponentPropertySource = self._get_property_source(
+                component=self.component,
+                component_key=cast(ComponentKey, self.component_key),
+                prop_names=prop_names
+            )
+        except Exception as e:
+            logger.debug(
+                f"NASA coefficients are not available from property source: {e}"
+            )
+            return None
+
+        if prop_src is None:
+            return None
 
         # available props
         available_props = prop_src.available_props
-        # all loaded
-        all_loaded = prop_src.all_loaded
         # props
         props = prop_src.props
-
-        # >> check
-        if all_loaded is False:
-            raise
 
         # NOTE: coefficients values
         coeff_values: Dict[str, float] = {}
@@ -272,6 +302,21 @@ class HSG(DataExtractor):
 
             # add
             coeff_values[prop] = float(val)
+
+        # The property source is usable only when the full NASA coefficient pack
+        # is present. This allows equation-source model data to be used when
+        # direct properties are missing or only partially loaded.
+        missing_coeffs = [
+            coefficient
+            for coefficient in coefficient_symbols
+            if coefficient not in coeff_values
+        ]
+        if missing_coeffs:
+            logger.debug(
+                f"Incomplete NASA coefficient property source for "
+                f"{self.component_id}; missing {missing_coeffs}"
+            )
+            return None
 
         # res
         return coeff_values
