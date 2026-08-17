@@ -151,15 +151,6 @@ H2_thermodb: ComponentThermoDBSource = ComponentThermoDBSource(
 # =======================================
 # ! update thermodb rule
 
-# ! with rules
-# model_source2: ModelSource = load_and_build_model_source(
-#     thermodb_sources=[
-#         CO2_thermodb
-#     ],
-#     rules=thermodb_rules,
-# )
-# print(model_source2)
-
 # ! without rules
 model_source: ModelSource = load_and_build_model_source(
     thermodb_sources=[
@@ -171,7 +162,7 @@ model_source: ModelSource = load_and_build_model_source(
     ],
     original_equation_label=False
 )
-print(model_source)
+# print(model_source)
 
 # get data source and equation source
 datasource = model_source.data_source
