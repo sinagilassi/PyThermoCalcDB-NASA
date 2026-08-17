@@ -1,6 +1,6 @@
 # import libs
 import logging
-from typing import Optional, Dict, List, Any
+from typing import Optional, Dict, List, Any, Literal
 from pyThermoLinkDB.thermo import Source
 from pyThermoLinkDB.models.component_models import ComponentEquationSource, ComponentPropertySource
 from pythermodb_settings.models import Component, ComponentKey
@@ -20,8 +20,35 @@ class DataExtractor:
         # NOTE: set source
         self.source = source
 
+        # NOTE: check source type
+        self.source_type: Literal[
+            'DATA',
+            'EQUATION'
+        ] = self._check_source_type()
+
+    # SECTION: Check source type
+    def _check_source_type(self) -> Literal['DATA', 'EQUATION']:
+        eq_src = self.source.equationsource
+
+        eq_checker = []
+
+        # iterate through eq_src
+        for component_id, component_eq_src in eq_src.items():
+            # check if component_eq_src is a ComponentEquationSource
+            if len(component_eq_src) > 0:
+                eq_checker.append(True)
+            else:
+                eq_checker.append(False)
+
+        # check if all components have equations
+        if all(eq_checker):
+            return 'EQUATION'
+        else:
+            return 'DATA'
+
     # SECTION: formation data
     # ! formation data
+
     def _get_formation_data(
         self,
         component: Component,
