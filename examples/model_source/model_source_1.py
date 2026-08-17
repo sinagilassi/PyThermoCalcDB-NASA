@@ -100,7 +100,7 @@ component_model_source: List[ComponentModelSource] = build_components_model_sour
     components_thermodb=thermodb_components,
     rules=None,
 )
-print(component_model_source)
+# print(component_model_source)
 
 # ====================================================
 # SECTION: build model source

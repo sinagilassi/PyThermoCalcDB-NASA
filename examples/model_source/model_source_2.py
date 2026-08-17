@@ -1,5 +1,5 @@
 # import packages/modules
-from examples.references.reference_3 import REFERENCE_CONTENT
+from examples.references.reference_3_1 import REFERENCE_CONTENT
 import os
 import sys
 from rich import print
@@ -104,7 +104,7 @@ component_model_source: List[ComponentModelSource] = build_components_model_sour
     components_thermodb=thermodb_components,
     rules=None,
 )
-print(component_model_source)
+# print(component_model_source)
 
 # ====================================================
 # SECTION: build model source
