@@ -24,6 +24,56 @@ from .utils.tools import _select_nasa_type
 # NOTE: set up logger
 logger = logging.getLogger(__name__)
 
+# SECTION: Auxiliary Functions
+
+
+def _set_nasa_range_type(
+        temperature: Temperature,
+        nasa_type: NASAType,
+):
+    """
+    Configure the NASA range type based on the provided temperature and NASA type.
+
+    Parameters
+    ----------
+    temperature : Temperature
+        The temperature at which to determine the NASA range type.
+    nasa_type : NASAType
+        The type of NASA polynomial to use ("nasa7" or "nasa9").
+
+    Returns
+    -------
+    NASARangeType
+        The determined NASA range type based on the temperature and NASA type.
+    """
+    # SECTION: set nasa temperature break value
+    # ! min [1000K]
+    nasa_temp_break_min_value = TEMPERATURE_BREAK_NASA7_1000_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_1000_K
+    nasa_temperature_break_min = Temperature(
+        value=nasa_temp_break_min_value,
+        unit="K"
+    )
+
+    # ! max [6000K]
+    nasa_temp_break_max_value = TEMPERATURE_BREAK_NASA7_6000_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_6000_K
+    nasa_temperature_break_max = Temperature(
+        value=nasa_temp_break_max_value,
+        unit="K"
+    )
+
+    # SECTION: select nasa type
+    nasa_type_selected = _select_nasa_type(
+        temperature=temperature,
+        break_temp_min=nasa_temperature_break_min,
+        break_temp_max=nasa_temperature_break_max,
+        nasa_type=cast(NASAType, nasa_type)
+    )
+
+    # >> cast
+    return cast(NASARangeType, nasa_type_selected)
+
+
+# SECTION: Enthalpy Calculation
 
 @measure_time
 def H_T(
@@ -69,15 +119,6 @@ def H_T(
             component_key=component_key
         )
 
-        # SECTION: hsg calculation
-        hsg = HSG(
-            source=Source_,
-            component=component,
-            component_key=component_key,
-            nasa_type=nasa_type,
-            basis=basis
-        )
-
         # SECTION: set nasa temperature break value
         # ! min [1000K]
         nasa_temp_break_min_value = TEMPERATURE_BREAK_NASA7_1000_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_1000_K
@@ -102,9 +143,21 @@ def H_T(
         )
 
         # >> cast
+        # ! 'nasa7_200_1000_K', 'nasa7_1000_6000_K', 'nasa7_6000_20000_K',
+        # ! 'nasa9_200_1000_K', 'nasa9_1000_6000_K', 'nasa9_6000_20000_K'
         nasa_type_selected = cast(
             NASARangeType,
             nasa_type_selected
+        )
+
+        # SECTION: hsg calculation
+        hsg = HSG(
+            source=Source_,
+            component=component,
+            component_key=component_key,
+            nasa_type=nasa_type,
+            nasa_range_type=nasa_type_selected,
+            basis=basis
         )
 
         # NOTE: Calculate enthalpy
@@ -164,15 +217,6 @@ def S_T(
             component_key=component_key
         )
 
-        # SECTION: hsg calculation
-        hsg = HSG(
-            source=Source_,
-            component=component,
-            component_key=component_key,
-            nasa_type=nasa_type,
-            basis=basis
-        )
-
         # SECTION: set nasa temperature break value
         # ! min [1000K]
         nasa_temp_break_min_value = TEMPERATURE_BREAK_NASA7_1000_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_1000_K
@@ -200,6 +244,16 @@ def S_T(
         nasa_type_selected = cast(
             NASARangeType,
             nasa_type_selected
+        )
+
+        # SECTION: hsg calculation
+        hsg = HSG(
+            source=Source_,
+            component=component,
+            component_key=component_key,
+            nasa_type=nasa_type,
+            nasa_range_type=nasa_type_selected,
+            basis=basis
         )
 
         # NOTE: Calculate entropy
@@ -259,15 +313,6 @@ def G_T(
             component_key=component_key
         )
 
-        # SECTION: hsg calculation
-        hsg = HSG(
-            source=Source_,
-            component=component,
-            component_key=component_key,
-            nasa_type=nasa_type,
-            basis=basis
-        )
-
         # SECTION: set nasa temperature break value
         # ! min [1000K]
         nasa_temp_break_min_value = TEMPERATURE_BREAK_NASA7_1000_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_1000_K
@@ -295,6 +340,16 @@ def G_T(
         nasa_type_selected = cast(
             NASARangeType,
             nasa_type_selected
+        )
+
+        # SECTION: hsg calculation
+        hsg = HSG(
+            source=Source_,
+            component=component,
+            component_key=component_key,
+            nasa_type=nasa_type,
+            nasa_range_type=nasa_type_selected,
+            basis=basis
         )
 
         # NOTE: Calculate Gibbs free energy
@@ -354,15 +409,6 @@ def Cp_T(
             component_key=component_key
         )
 
-        # SECTION: hsg calculation
-        hsg = HSG(
-            source=Source_,
-            component=component,
-            component_key=component_key,
-            nasa_type=nasa_type,
-            basis=basis
-        )
-
         # SECTION: set nasa temperature break value
         # ! min [1000K]
         nasa_temp_break_min_value = TEMPERATURE_BREAK_NASA7_1000_K if nasa_type == "nasa7" else TEMPERATURE_BREAK_NASA9_1000_K
@@ -390,6 +436,16 @@ def Cp_T(
         nasa_type_selected = cast(
             NASARangeType,
             nasa_type_selected
+        )
+
+        # SECTION: hsg calculation
+        hsg = HSG(
+            source=Source_,
+            component=component,
+            component_key=component_key,
+            nasa_type=nasa_type,
+            nasa_range_type=nasa_type_selected,
+            basis=basis
         )
 
         # NOTE: Calculate heat capacity
@@ -450,11 +506,19 @@ def dG_rxn_STD(
         components = reaction.available_components
 
         # SECTION: hsgs calculation
+        # > set nasa range type
+        nasa_range_type = _set_nasa_range_type(
+            temperature=temperature,
+            nasa_type=nasa_type
+        )
+
+        # >> init hsgs
         hsgs = HSGs(
             source=Source_,
             components=components,
             component_key=component_key,
-            nasa_type=nasa_type
+            nasa_type=nasa_type,
+            nasa_range_type=nasa_range_type
         )
 
         # NOTE: Calculate standard Gibbs free energy change of the reaction
@@ -532,11 +596,19 @@ def dS_rxn_STD(
         components = reaction.available_components
 
         # SECTION: hsgs calculation
+        # >> set nasa range type
+        nasa_range_type = _set_nasa_range_type(
+            temperature=temperature,
+            nasa_type=nasa_type
+        )
+
+        # >> init hsgs
         hsgs = HSGs(
             source=Source_,
             components=components,
             component_key=component_key,
-            nasa_type=nasa_type
+            nasa_type=nasa_type,
+            nasa_range_type=nasa_range_type
         )
 
         # NOTE: Calculate standard entropy change of the reaction
@@ -614,11 +686,19 @@ def dH_rxn_STD(
         components = reaction.available_components
 
         # SECTION: hsgs calculation
+        # > set nasa range type
+        nasa_range_type = _set_nasa_range_type(
+            temperature=temperature,
+            nasa_type=nasa_type
+        )
+
+        # > init hsgs
         hsgs = HSGs(
             source=Source_,
             components=components,
             component_key=component_key,
-            nasa_type=nasa_type
+            nasa_type=nasa_type,
+            nasa_range_type=nasa_range_type
         )
 
         # NOTE: Calculate standard enthalpy change of the reaction
@@ -696,11 +776,19 @@ def Keq(
         components = reaction.available_components
 
         # SECTION: hsgs calculation
+        # > set nasa range type
+        nasa_range_type = _set_nasa_range_type(
+            temperature=temperature,
+            nasa_type=nasa_type
+        )
+
+        # > init hsgs
         hsgs = HSGs(
             source=Source_,
             components=components,
             component_key=component_key,
-            nasa_type=nasa_type
+            nasa_type=nasa_type,
+            nasa_range_type=nasa_range_type
         )
 
         # NOTE: calculate standard Gibbs free energy change of the reaction
@@ -790,11 +878,19 @@ def Keq_vh_shortcut(
         components = reaction.available_components
 
         # SECTION: hsgs calculation
+        # > set nasa range type
+        nasa_range_type = _set_nasa_range_type(
+            temperature=temperature,
+            nasa_type=nasa_type
+        )
+
+        # > init hsgs
         hsgs = HSGs(
             source=Source_,
             components=components,
             component_key=component_key,
-            nasa_type=nasa_type
+            nasa_type=nasa_type,
+            nasa_range_type=nasa_range_type
         )
 
         # NOTE: Calculate standard enthalpy change of the reaction
