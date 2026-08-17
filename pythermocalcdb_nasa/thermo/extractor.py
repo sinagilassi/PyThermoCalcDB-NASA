@@ -2,7 +2,7 @@
 import logging
 from typing import Optional, Dict, List, Any
 from pyThermoLinkDB.thermo import Source
-from pyThermoLinkDB.models.component_models import ComponentEquationSource
+from pyThermoLinkDB.models.component_models import ComponentEquationSource, ComponentPropertySource
 from pythermodb_settings.models import Component, ComponentKey
 from pythermodb_settings.utils import set_component_id
 # locals
@@ -20,6 +20,8 @@ class DataExtractor:
         # NOTE: set source
         self.source = source
 
+    # SECTION: formation data
+    # ! formation data
     def _get_formation_data(
         self,
         component: Component,
@@ -60,6 +62,34 @@ class DataExtractor:
                 f"Error retrieving formation data for {prop_name}: {e}")
             return None
 
+    # ! property source
+    def _get_property_source(
+        self,
+        component: Component,
+        component_key: ComponentKey,
+        prop_names: List[str],
+    ):
+        # NOTE: set component id
+        component_id = set_component_id(
+            component=component,
+            component_key=component_key
+        )
+
+        try:
+            # retrieve props
+            prop_source = self.source.get_props(
+                component_id=component_id,
+                prop_names=prop_names
+            )
+
+            return prop_source
+        except Exception as e:
+            logger.exception(
+                f"Error retrieving property source for {component_id}: {e}"
+            )
+            raise
+
+    # SECTION: equation source
     def _get_equation_source(
             self,
             component: Component,
@@ -118,11 +148,3 @@ class DataExtractor:
             logger.exception(
                 f"Error retrieving equation source for {prop_name}: {e}")
             raise
-
-    def _get_property_source(
-            self,
-            component: Component,
-            component_key: ComponentKey,
-            prop_names: List[str],
-    ):
-        pass
