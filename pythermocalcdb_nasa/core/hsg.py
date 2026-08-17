@@ -1,7 +1,7 @@
 # import libs
 import logging
 from typing import Optional, Dict, List, Any, cast, Literal
-from pyThermoLinkDB.models.component_models import ComponentEquationSource
+from pyThermoLinkDB.models.component_models import ComponentEquationSource, ComponentPropertySource
 from pythermodb_settings.models import Component, Temperature, ComponentKey, CustomProp
 from pythermodb_settings.utils import set_component_id
 from pyThermoLinkDB.thermo import Source
@@ -82,6 +82,7 @@ class HSG(DataExtractor):
             component: Component,
             component_key: ComponentKey,
             nasa_type: NASAType,
+            nasa_range_type: NASARangeType,
             basis: BasisType = "molar",
     ):
         """
@@ -97,6 +98,8 @@ class HSG(DataExtractor):
             The key type used to identify the component.
         nasa_type : NASAType
             The type of NASA polynomial to extract.
+        nasa_range_type : NASARangeType
+            The temperature range type for the NASA polynomial.
         basis : BasisType, optional
             The basis type for the calculations (default is "molar").
         """
@@ -107,6 +110,10 @@ class HSG(DataExtractor):
         self.component = component
         # NOTE: set component key
         self.component_key = component_key
+        # NOTE: set nasa type
+        self.nasa_type = nasa_type
+        # NOTE: set nasa range type
+        self.nasa_range_type = nasa_range_type
         # NOTE: set basis
         self.basis = basis
 
@@ -120,29 +127,26 @@ class HSG(DataExtractor):
         )
 
         # SECTION: retrieve data
-        # NOTE: extract NASA9 coefficients
         if nasa_type == "nasa9":
-            self.nasa9_200_1000_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
-                prop_name="nasa9_200_1000_K",
+            # ! ::: extract NASA9 coefficients
+            self.nasa9_coefficients: Optional[Dict[str, float]] = \
+                self._extract_nasa_coefficients_from_property_data(
+                nasa_type=nasa_type
+            ) or \
+                self._extract_nasa_coefficients_from_equation_mode(
+                prop_name=nasa_range_type,
             )
-            self.nasa9_1000_6000_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
-                prop_name="nasa9_1000_6000_K",
+        elif nasa_type == "nasa7":
+            # ! ::: extract NASA7 coefficients
+            self.nasa7_coefficients: Optional[Dict[str, float]] = \
+                self._extract_nasa_coefficients_from_property_data(
+                nasa_type=nasa_type
+            ) or \
+                self._extract_nasa_coefficients_from_equation_mode(
+                prop_name=nasa_range_type,
             )
-            self.nasa9_6000_20000_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
-                prop_name="nasa9_6000_20000_K",
-            )
-
-        # NOTE: extract NASA7 coefficients
-        if nasa_type == "nasa7":
-            self.nasa7_200_1000_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
-                prop_name="nasa7_200_1000_K",
-            )
-            self.nasa7_1000_6000_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
-                prop_name="nasa7_1000_6000_K",
-            )
-            self.nasa7_6000_20000_coefficients: Optional[Dict[str, float]] = self._extract_nasa_coefficients(
-                prop_name="nasa7_6000_20000_K",
-            )
+        else:
+            raise ValueError(f"Invalid NASA type: {nasa_type}")
 
     @property
     def props(self) -> Optional[Dict[str, float]]:
@@ -160,7 +164,8 @@ class HSG(DataExtractor):
     def props(self, value: Optional[Dict[str, float]]):
         self._props = value
 
-    def _extract_nasa_coefficients(
+    # ! ::: extract nasa coefficients from equation mode
+    def _extract_nasa_coefficients_from_equation_mode(
             self,
             prop_name: NASARangeType,
     ) -> Optional[Dict[str, float]]:
@@ -201,6 +206,78 @@ class HSG(DataExtractor):
                 f"Error extracting NASA9 coefficients: {e}")
             return None
 
+    # ! ::: extract nasa coefficients from property data mode
+    def _extract_nasa_coefficients_from_property_data(
+            self,
+            nasa_type: NASAType
+    ) -> Optional[Dict[str, float]]:
+        """
+        Extract NASA polynomial coefficients from property data mode.
+
+        Parameters
+        ----------
+        nasa_type : NASAType
+            The type of NASA polynomial to extract.
+
+        Returns
+        -------
+        Optional[Dict[str, float]]
+            A dictionary containing the NASA polynomial coefficients if available, otherwise None.
+        """
+        # NOTE: choose coefficients
+        if nasa_type == 'nasa7':
+            coefficient_symbols = [str(x) for x in self.req_coeffs_NASA7]
+        elif nasa_type == 'nasa9':
+            coefficient_symbols = [str(x) for x in self.req_coeffs_NASA9]
+        else:
+            logger.error(
+                f"Invalid NASA type: {nasa_type}. Must be 'nasa7' or 'nasa9'."
+            )
+            return None
+
+        # NOTE: extract data
+        # >> get property data
+        prop_src: ComponentPropertySource = self._get_property_source(
+            component=self.component,
+            component_key=cast(ComponentKey, self.component_key),
+            prop_names=coefficient_symbols
+        )
+
+        # available props
+        available_props = prop_src.available_props
+        # all loaded
+        all_loaded = prop_src.all_loaded
+        # props
+        props = prop_src.props
+
+        # >> check
+        if all_loaded is False:
+            raise
+
+        # NOTE: coefficients values
+        coeff_values: Dict[str, float] = {}
+
+        # iterate over available props
+        for prop in available_props:
+            # get value src
+            val_src_ = props[prop]
+            val = val_src_.get('value', None)
+
+            # >> check
+            if val is None:
+                logger.warning(
+                    f"{prop} has no value!"
+                )
+                continue
+
+            # add
+            coeff_values[prop] = float(val)
+
+        # res
+        return coeff_values
+
+    # SECTION: set nasa coefficients
+
     def _set_nasa_coefficients(
             self,
             nasa_type: NASARangeType,
@@ -208,7 +285,7 @@ class HSG(DataExtractor):
         try:
             if nasa_type == "nasa9_200_1000_K":
                 # ! get coeffs [from 200 to 1000 K]
-                coeffs = self.nasa9_200_1000_coefficients
+                coeffs = self.nasa9_coefficients
                 # >> check coeffs
                 if coeffs is None:
                     return None
@@ -217,7 +294,7 @@ class HSG(DataExtractor):
 
             elif nasa_type == "nasa9_1000_6000_K":
                 # ! get coeffs [from 1000 to 6000 K]
-                coeffs = self.nasa9_1000_6000_coefficients
+                coeffs = self.nasa9_coefficients
                 # >> check coeffs
                 if coeffs is None:
                     return None
@@ -226,7 +303,7 @@ class HSG(DataExtractor):
 
             elif nasa_type == "nasa9_6000_20000_K":
                 # ! get coeffs [from 6000 to 20000 K]
-                coeffs = self.nasa9_6000_20000_coefficients
+                coeffs = self.nasa9_coefficients
                 # >> check coeffs
                 if coeffs is None:
                     return None
@@ -235,7 +312,7 @@ class HSG(DataExtractor):
 
             elif nasa_type == "nasa7_200_1000_K":
                 # ! get coeffs [from 200 to 1000 K]
-                coeffs = self.nasa7_200_1000_coefficients
+                coeffs = self.nasa7_coefficients
                 # >> check coeffs
                 if coeffs is None:
                     return None
@@ -244,7 +321,7 @@ class HSG(DataExtractor):
 
             elif nasa_type == "nasa7_1000_6000_K":
                 # ! get coeffs [from 1000 to 6000 K]
-                coeffs = self.nasa7_1000_6000_coefficients
+                coeffs = self.nasa7_coefficients
                 # >> check coeffs
                 if coeffs is None:
                     return None
@@ -253,7 +330,7 @@ class HSG(DataExtractor):
 
             elif nasa_type == "nasa7_6000_20000_K":
                 # ! get coeffs [from 6000 to 20000 K]
-                coeffs = self.nasa7_6000_20000_coefficients
+                coeffs = self.nasa7_coefficients
                 # >> check coeffs
                 if coeffs is None:
                     return None
