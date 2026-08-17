@@ -177,15 +177,23 @@ class HSG(DataExtractor):
         properties; if the requested coefficient pack is not complete, the
         range-specific equation source is used as the fallback.
         """
-        coefficients = self._extract_nasa_coefficients_from_property_data(
-            nasa_type=nasa_type
-        )
-        if coefficients is not None:
-            return coefficients
+        # check source type
+        if self.source_type == 'DATA':
+            coefficients = self._extract_nasa_coefficients_from_property_data(
+                nasa_type=nasa_type
+            )
+        elif self.source_type == 'EQUATION':
+            coefficients = self._extract_nasa_coefficients_from_equation_mode(
+                prop_name=nasa_range_type,
+            )
+        else:
+            logger.error(
+                f"Invalid source type: {self.source_type}. Must be 'DATA' or 'EQUATION'."
+            )
+            return None
 
-        return self._extract_nasa_coefficients_from_equation_mode(
-            prop_name=nasa_range_type,
-        )
+        # res
+        return coefficients
 
     # ! ::: extract nasa coefficients from equation mode
     def _extract_nasa_coefficients_from_equation_mode(
