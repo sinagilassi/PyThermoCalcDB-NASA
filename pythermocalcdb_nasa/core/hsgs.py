@@ -33,7 +33,8 @@ class HSGs:
         source: Source,
         components: List[Component],
         component_key: ComponentKey,
-        nasa_type: NASAType
+        nasa_type: NASAType,
+        nasa_range_type: NASARangeType,
     ) -> None:
         """
         Initialize HSGs object.
@@ -48,12 +49,15 @@ class HSGs:
             The key to identify components.
         nasa_type : NASAType
             The type of NASA polynomial to use ("nasa7" or "nasa9").
+        nasa_range_type : NASARangeType
+            The specific NASA polynomial range type to use for calculations.
         """
         # NOTE: set
         self.source = source
         self.components = components
         self.component_key = component_key
         self.nasa_type = nasa_type
+        self.nasa_range_type = nasa_range_type
 
         # SECTION: set methods
         self.component_ids = [
@@ -111,6 +115,7 @@ class HSGs:
                 component=component,
                 component_key=cast(ComponentKey, self.component_key),
                 nasa_type=cast(NASAType, self.nasa_type),
+                nasa_range_type=cast(NASARangeType, self.nasa_range_type),
             )
 
             # NOTE: set
