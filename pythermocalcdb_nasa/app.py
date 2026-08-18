@@ -2,6 +2,8 @@
 import logging
 from typing import Optional, Literal, cast, Dict
 from pythermodb_settings.models import Temperature, Component, CustomProp, ComponentKey
+from pyThermoDB import build_component_thermodb_from_reference, ComponentThermoDB
+from pyThermoLinkDB import build_components_model_source, build_model_source
 from pyThermoLinkDB.models import ModelSource
 from pyThermoLinkDB.thermo import Source
 from pyreactlab_core.models.reaction import Reaction
@@ -20,6 +22,12 @@ from .configs.constants import (
     BasisType
 )
 from .utils.tools import _select_nasa_type
+from .database import (
+    Phase,
+    component_available,
+    read_component,
+)
+from .reference import build_reference_from_rows
 
 # NOTE: set up logger
 logger = logging.getLogger(__name__)
@@ -72,8 +80,184 @@ def _set_nasa_range_type(
     # >> cast
     return cast(NASARangeType, nasa_type_selected)
 
+# SECTION: Database function
+
+def check_component_availability(
+    components: list[Component] | Component,
+    phase: Phase | None = None,
+) -> dict[str, list[Component]]:
+    """
+    Check component availability in the embedded NASA-9 SQLite database.
+
+    Parameters
+    ----------
+    components : list[Component] | Component
+        Component or components to check.
+    phase : Phase | None, optional
+        Phase to search. If None, each component's own state is used
+        when it is one of "g", "l", or "s".
+
+    Returns
+    -------
+    dict[str, list[Component]]
+        Dictionary with ``matched_components`` and ``missing_components``.
+    """
+    component_list = [components] if isinstance(components, Component) else components
+
+    matched_components: list[Component] = []
+    missing_components: list[Component] = []
+
+    for component in component_list:
+        component_phase = phase
+        if component_phase is None and component.state in ("g", "l", "s"):
+            component_phase = cast(Phase, component.state)
+
+        available = component_available(
+            component_name=component.name,
+            component_formula=component.formula,
+            phase=component_phase,
+        )
+
+        if available:
+            matched_components.append(component)
+        else:
+            missing_components.append(component)
+
+    return {
+        "matched_components": matched_components,
+        "missing_components": missing_components,
+    }
+
+
+def _get_temperature_value(
+    temperature: Temperature | float | int,
+) -> float:
+    """
+    Return a kelvin temperature value for database range selection.
+    """
+    if isinstance(temperature, Temperature):
+        if temperature.unit != "K":
+            raise ValueError(
+                "Database model source builder expects temperature in K."
+            )
+
+        return float(temperature.value)
+
+    return float(temperature)
+
+
+def build_reference_content_from_database(
+    components: list[Component],
+    temperature: Temperature | float | int,
+) -> str:
+    """
+    Build NASA-9 reference content from the embedded SQLite database.
+
+    Parameters
+    ----------
+    components : list[Component]
+        Components to read. Component states must be "g", "l", or "s".
+    temperature : Temperature | float | int
+        Temperature in kelvin used to select the NASA-9 coefficient range.
+
+    Returns
+    -------
+    str
+        Reference content compatible with pyThermoDB.
+    """
+    if len(components) == 0:
+        raise ValueError("At least one component is required.")
+
+    temperature_value = _get_temperature_value(temperature)
+
+    rows: list[dict] = []
+    for component in components:
+        if component.state not in ("g", "l", "s"):
+            raise ValueError(
+                f"NASA-9 database only supports 'g', 'l', and 's' phases; "
+                f"got {component.state!r} for {component.name!r}."
+            )
+
+        row = read_component(
+            component_name=component.name,
+            phase=cast(Phase, component.state),
+            temperature=temperature_value,
+            component_formula=component.formula,
+        )
+
+        if row is None:
+            raise ValueError(
+                f"NASA-9 data not found for "
+                f"component={component.name!r}, "
+                f"phase={component.state!r}, "
+                f"temperature={temperature_value} K."
+            )
+
+        rows.append(row)
+
+    return build_reference_from_rows(rows)
+
+
+def build_model_source_from_database(
+    components: list[Component],
+    temperature: Temperature | float | int,
+    rules: dict | str | None = None,
+) -> ModelSource:
+    """
+    Build a ModelSource directly from the embedded NASA-9 SQLite database.
+
+    The returned ModelSource can be passed to H_T, S_T, G_T, Cp_T, and
+    reaction calculation functions.
+
+    Parameters
+    ----------
+    components : list[Component]
+        Components to include in the model source.
+    temperature : Temperature | float | int
+        Temperature in kelvin used to select the NASA-9 coefficient range.
+    rules : dict | str | None, optional
+        Optional pyThermoLinkDB source rules.
+
+    Returns
+    -------
+    ModelSource
+        Built model source for the requested components.
+    """
+    reference_content = build_reference_content_from_database(
+        components=components,
+        temperature=temperature,
+    )
+
+    thermodb_components: list[ComponentThermoDB] = []
+    for component in components:
+        thermodb_component = build_component_thermodb_from_reference(
+            component_name=component.name,
+            component_formula=component.formula,
+            component_state=component.state,
+            reference_content=reference_content,
+            component_key="Formula-State",
+            check_labels=False,
+        )
+
+        if thermodb_component is None:
+            raise ValueError(
+                f"Failed to build ThermoDB component for {component.name!r}."
+            )
+
+        thermodb_components.append(thermodb_component)
+
+    component_model_source = build_components_model_source(
+        components_thermodb=thermodb_components,
+        rules=rules,
+    )
+
+    return build_model_source(
+        source=component_model_source,
+    )
+
 
 # SECTION: Enthalpy Calculation
+
 
 @measure_time
 def H_T(
