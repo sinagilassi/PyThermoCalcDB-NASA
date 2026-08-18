@@ -2,13 +2,8 @@
 import os
 from rich import print
 import pyThermoLinkDB as ptdblink
-from pyThermoLinkDB import load_and_build_model_source
-from pyThermoLinkDB.models import ModelSource
 import pyThermoDB as ptdb
 from pythermodb_settings.models import (
-    Component,
-    ComponentRule,
-    ComponentThermoDBSource,
     Temperature
 )
 from pyreactlab_core.models.reaction import Reaction
