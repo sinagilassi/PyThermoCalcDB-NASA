@@ -9,6 +9,9 @@ from .configs import (
 
 # app
 from .app import (
+    check_component_availability,
+    build_reference_content_from_database,
+    build_model_source_from_database,
     H_T,
     S_T,
     G_T,
@@ -28,6 +31,9 @@ __all__ = [
     "__email__",
     "__license__",
     # app
+    "check_component_availability",
+    "build_reference_content_from_database",
+    "build_model_source_from_database",
     "H_T",
     "S_T",
     "G_T",
