@@ -52,6 +52,13 @@ H2 = Component(
     state='g'
 )
 
+# ! methane
+CH4 = Component(
+    name='methane',
+    formula='CH4',
+    state='g'
+)
+
 # SECTION: reaction
 reaction = Reaction(
     name='Water-Gas Shift Reaction',
@@ -60,7 +67,7 @@ reaction = Reaction(
 )
 
 # NOTE: components list
-components: List[Component] = [CO2, H2O, CO, H2]
+components: List[Component] = [CO2, H2O, CO, H2, CH4]
 
 # ====================================================
 # SECTION: BUILD COMPONENT THERMODB
@@ -74,7 +81,11 @@ thermodb_dir = os.path.join(parent_dir, 'thermodb')
 print(thermodb_dir)
 
 # NOTE: ignore state properties
-ignore_state_props = ['nasa9-1', 'nasa9-2', 'nasa9-3']
+ignore_state_props = [
+    'nasa9_200_1000_K',
+    'nasa9_1000_6000_K',
+    'nasa9_6000_20000_K'
+]
 
 # ====================================================
 # SECTION: build components thermodb
