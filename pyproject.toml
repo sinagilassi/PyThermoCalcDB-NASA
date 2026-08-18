@@ -65,6 +65,7 @@ exclude = [
 pythermocalcdb_nasa = [
     "config/*.yml",
     "data/*.csv",
+    "database/*.sqlite",
     "templates/*.html",
     "static/*",
     "static/**/*"
