@@ -24,6 +24,7 @@ Calculations can also be done on your mobile with the MoziThermoCalc iOS app: [D
 - Species properties: `Cp(T)`, `H^0(T)`, `S^0(T)`, `G^0(T)` on molar or mass basis
 - Reaction properties: `Delta H^0(T)`, `Delta S^0(T)`, `Delta G^0(T)` plus equilibrium constants `K(T)`
 - Van't Hoff shortcut helper (`Keq_vh_shortcut`) using `Delta H^0(298 K)`
+- Embedded NASA-9 SQLite database with component availability checks and direct `ModelSource` building
 - The same thermochemistry calculations can be done on mobile via the MoziThermoCalc app
 - Clean separation of data (PyThermoDB/LinkDB) from the calculation engine
 - Returns `CustomProp` objects with units and metadata; optional timing logs via `mode`
@@ -36,7 +37,7 @@ Calculations can also be done on your mobile with the MoziThermoCalc iOS app: [D
 pip install pythermocalcdb-nasa
 ```
 
-Examples rely on helper packages and the ThermoDB pickles shipped under `examples/thermodb`:
+Examples rely on helper packages used for model-source and reaction handling:
 
 ```bash
 pip install pythermodb-settings pythermodb pythermolinkdb pyreactlab-core rich
@@ -46,13 +47,17 @@ pip install pythermodb-settings pythermodb pythermolinkdb pyreactlab-core rich
 
 ## ⚡ Quick start
 
-Build a `ModelSource` from the packaged NASA pickles and evaluate properties:
+Build a `ModelSource` from the embedded NASA-9 SQLite database and evaluate properties:
 
 ```python
-from pythermodb_settings.models import Component, ComponentThermoDBSource, Temperature
-from pyThermoLinkDB import load_and_build_model_source
+from pythermodb_settings.models import Component, Temperature
 from pyreactlab_core.models.reaction import Reaction
-from pythermocalcdb_nasa import Cp_T, Keq
+from pythermocalcdb_nasa import (
+    Cp_T,
+    Keq,
+    build_model_source_from_database,
+    check_component_availability,
+)
 
 CO2 = Component(name="carbon dioxide", formula="CO2", state="g")
 CO = Component(name="carbon monoxide", formula="CO", state="g")
@@ -60,17 +65,15 @@ H2O = Component(name="dihydrogen monoxide", formula="H2O", state="g")
 H2 = Component(name="dihydrogen", formula="H2", state="g")
 CH4 = Component(name="methane", formula="CH4", state="g")
 
-thermodb_sources = [
-    ComponentThermoDBSource(component=CO2, source="examples/thermodb/carbon dioxide-CO2-g-nasa-1.pkl"),
-    ComponentThermoDBSource(component=CO, source="examples/thermodb/carbon monoxide-CO-g-nasa-1.pkl"),
-    ComponentThermoDBSource(component=H2O, source="examples/thermodb/dihydrogen monoxide-H2O-g-nasa-1.pkl"),
-    ComponentThermoDBSource(component=H2, source="examples/thermodb/dihydrogen-H2-g-nasa-1.pkl"),
-    ComponentThermoDBSource(component=CH4, source="examples/thermodb/methane-CH4-g-nasa-1.pkl"),
-]
+components = [CH4, CO2, H2O, CO, H2]
 
-model_source = load_and_build_model_source(
-    thermodb_sources=thermodb_sources,
-    original_equation_label=False,  # normalize NASA labels
+availability = check_component_availability(components)
+if availability["missing_components"]:
+    raise ValueError(f"Missing components: {availability['missing_components']}")
+
+model_source = build_model_source_from_database(
+    components=availability["matched_components"],
+    temperature=Temperature(value=298.15, unit="K"),
 )
 
 # Species property
@@ -99,10 +102,50 @@ print(Keq_T)
 
 ---
 
-## 🧰 Helper functions
+## Build ModelSource From REFERENCE
+
+If you already have NASA reference content, you can still build a `ModelSource`
+through PyThermoDB and PyThermoLinkDB. This is the pattern used by
+`examples/model_source/model_source_2.py`.
+
+```python
+from pyThermoDB import build_component_thermodb_from_reference
+from pyThermoLinkDB import build_components_model_source, build_model_source
+
+thermodb_components = []
+
+for comp in components:
+    thermodb_component = build_component_thermodb_from_reference(
+        component_name=comp.name,
+        component_formula=comp.formula,
+        component_state=comp.state,
+        reference_content=REFERENCE_CONTENT,
+        check_labels=False,
+    )
+    if thermodb_component is None:
+        raise ValueError(f"thermodb_component for {comp.name} is None")
+    thermodb_components.append(thermodb_component)
+
+component_model_source = build_components_model_source(
+    components_thermodb=thermodb_components,
+    rules=None,
+)
+
+model_source = build_model_source(source=component_model_source)
+```
+
+Use this workflow when you need NASA-7 data or a custom reference source. The
+embedded SQLite helper currently builds NASA-9 model sources.
+
+---
+
+## Helper functions
 
 Available helpers (all return `CustomProp` or `None`):
 
+- `check_component_availability` - check whether components exist in the embedded NASA-9 database
+- `build_reference_content_from_database` - build PyThermoDB-compatible reference content from SQLite rows
+- `build_model_source_from_database` - build a ready `ModelSource` from the embedded NASA-9 database
 - `H_T`, `S_T`, `G_T`, `Cp_T` - species properties on molar or mass basis
 - `dH_rxn_STD`, `dS_rxn_STD`, `dG_rxn_STD` - reaction properties from stoichiometry
 - `Keq`, `Keq_vh_shortcut` - equilibrium constants from `Delta G^0(T)` or Van't Hoff
@@ -116,6 +159,10 @@ Run from the project root, e.g. `python examples/exp-2.py`:
 - `examples/exp-1.py` - build `ModelSource` objects and inspect NASA segments
 - `examples/exp-2.py` - evaluate `H_T`, `S_T`, `G_T`, and `Cp_T` for CO2/CH4
 - `examples/exp-3.py` - water-gas shift reaction properties and `Keq(T)`
+- `examples/exp-4.py` - water-gas shift calculations using a reference-built model source
+- `examples/exp-6.py` - water-gas shift calculations using a SQLite-built model source
+- `examples/model_source/model_source_3.py` - build a SQLite model source for random gas-phase components
+- `examples/model_source/model_source_4.py` - build a SQLite model source for specific WGS components
 - `examples/build-thermodb.py` - generate ThermoDB pickles from reference data
 - `examples/filter_reference-thermodb.py` - subset the reference dataset for examples/tests
 
